@@ -12,8 +12,7 @@ CREATE TABLE memos (
     is_pinned INTEGER DEFAULT 0,
     is_favorite INTEGER DEFAULT 0,
     created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    FOREIGN KEY (categories) REFERENCES categories(id)
+    updated_at TEXT NOT NULL
 );
 
 CREATE TABLE tags (
@@ -24,8 +23,8 @@ CREATE TABLE tags (
 CREATE TABLE memo_tags (
     memo_id INTEGER NOT NULL,
     tag_id INTEGER NOT NULL,
-    PRIMARY KEY (memo_id, tag_id)
-    FOREIGN KEY (memo_id) REFERENCES memos(id)
+    PRIMARY KEY (memo_id, tag_id),
+    FOREIGN KEY (memo_id) REFERENCES memos(id),
     FOREIGN KEY (tag_id) REFERENCES tags(id)
 );
 
