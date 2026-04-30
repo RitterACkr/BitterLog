@@ -1,0 +1,145 @@
+package dev.ritterackr.bitterlog.dao;
+
+import dev.ritterackr.bitterlog.database.DatabaseManager;
+import dev.ritterackr.bitterlog.model.Memo;
+import org.flywaydb.core.internal.database.base.Database;
+
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * メモのCRUD操作を担当するクラス
+ */
+public class MemoDao {
+
+    /**
+     * メモの新規作成
+     * @param memo 作成するメモ
+     * @return 生成されたMemo
+     * @throws SQLException DB操作失敗時のスタックトレース
+     */
+    public int create(Memo memo) throws SQLException {
+        String sql = """
+            INSERT INTO memos(title, content, category_id, is_pinned, is_favorite, create_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """;
+
+        Connection conn = DatabaseManager.getInstance().getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, memo.getTitle());
+            stmt.setString(2, memo.getContent());
+            stmt.setInt(3, memo.getCategoryId());
+            stmt.setInt(4, memo.isPinned() ? 1 : 0);
+            stmt.setInt(5, memo.isFavorite() ? 1 : 0);
+            stmt.setString(6, memo.getCreatedAt().toString());
+            stmt.setString(7, memo.getUpdatedAt().toString());
+            stmt.executeUpdate();
+
+            // 生成されたIDを返す
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                if (keys.next()) return keys.getInt(1);
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 全メモを取得<br>
+     * ピン留めメモを先頭にした後,更新日時の降順で返す
+     * @return メモ一覧
+     * @throws SQLException DB操作失敗時のスタックトレース
+     */
+    public List<Memo> findAll() throws SQLException {
+        String sql = """
+            SELECT * FROM memos ORDER BY is_pinned DESC, updated_at DESC
+        """;
+
+        Connection conn = DatabaseManager.getInstance().getConnection();
+        List<Memo> memos = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) memos.add(mapResultSet(rs));
+        }
+        return memos;
+    }
+
+    /**
+     * 指定されたIDからメモを1件取得
+     * @param id メモID
+     * @return 該当メモ
+     * @throws SQLException DB操作失敗時のスタックトレース
+     */
+    public Memo findById(int id) throws SQLException {
+        String sql = """
+            SELECT * FROM memos WHERE id = ?
+        """;
+
+        Connection conn = DatabaseManager.getInstance().getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return mapResultSet(rs);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * メモを更新
+     * @param memo 更新するメモ
+     * @throws SQLException DB操作失敗時のスタックトレース
+     */
+    public void update(Memo memo) throws SQLException {
+        String sql = """
+            UPDATE memos SET title = ?, content = ?, category_id = ?, is_pinned = ?, is_favorite = ?, updated_at = ? WHERE id = ?
+        """;
+
+        Connection conn = DatabaseManager.getInstance().getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, memo.getTitle());
+            stmt.setString(2, memo.getContent());
+            stmt.setInt(3, memo.getCategoryId());
+            stmt.setInt(4, memo.isPinned() ? 1 : 0);
+            stmt.setInt(5, memo.isFavorite() ? 1 : 0);
+            stmt.setString(6, LocalDateTime.now().toString());
+            stmt.setInt(7, memo.getId());
+            stmt.executeUpdate();
+        }
+    }
+
+    /**
+     * メモを削除
+     * @param id 削除するメモID
+     * @throws SQLException DB操作失敗時のスタックトレース
+     */
+    public void delete(int id) throws SQLException {
+        String sql = "DELETE FROM memos WHERE id = ?";
+
+        Connection conn = DatabaseManager.getInstance().getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
+    /**
+     * ResultSetからMemoオブジェクトにマッピング
+     * @param rs ResultSet
+     * @return Memoオブジェクト
+     * @throws SQLException DB操作失敗時のスタックトレース
+     */
+    private Memo mapResultSet(ResultSet rs) throws SQLException {
+        return new Memo(
+                rs.getInt("id"),
+                rs.getString("title"),
+                rs.getString("content"),
+                rs.getInt("category_id"),
+                rs.getInt("is_pinned") == 1,
+                rs.getInt("is_favorite") == 1,
+                LocalDateTime.parse(rs.getString("created_at")),
+                LocalDateTime.parse(rs.getString("updated_at"))
+        );
+    }
+}
