@@ -156,4 +156,23 @@ public class TagDao {
             stmt.executeUpdate();
         }
     }
+
+    /**
+     * 指定されたタグIDを持つメモのIDリストを取得
+     * @param tagId タグID
+     * @return メモIDリスト
+     * @throws SQLException DB操作失敗時のスタックトレース
+     */
+    public List<Integer> findMemoIdsByTagId(int tagId) throws SQLException {
+        String sql = "SELECT memo_id FROM memo_tags WHERE tag_id = ?";
+        Connection conn = DatabaseManager.getInstance().getConnection();
+        List<Integer> memoIds = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, tagId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) memoIds.add(rs.getInt("memo_id"));
+            }
+        }
+        return memoIds;
+    }
 }

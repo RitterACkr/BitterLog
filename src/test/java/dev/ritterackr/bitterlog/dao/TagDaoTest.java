@@ -105,4 +105,22 @@ class TagDaoTest {
         Tag tag = tagDao.findByName("DeleteTag");
         assertNull(tag, "削除後はnullが返るか");
     }
+
+    @Test
+    @Order(8)
+    @DisplayName("タグIDでメモIDリストを取得できるか")
+    void testFindMemoIdsByTagId() throws SQLException {
+        Memo memo1 = new Memo("絞り込みテスト1", "内容1");
+        Memo memo2 = new Memo("絞り込みテスト2", "内容2");
+        int memoId1 = memoDao.create(memo1);
+        int memoId2 = memoDao.create(memo2);
+        int tagId = tagDao.create("FilterTag");
+
+        tagDao.addTagToMemo(memoId1, tagId);
+        tagDao.addTagToMemo(memoId2, tagId);
+
+        List<Integer> memoIds = tagDao.findMemoIdsByTagId(tagId);
+        assertTrue(memoIds.contains(memoId1), "メモ1が含まれているか");
+        assertTrue(memoIds.contains(memoId2), "メモ2が含まれているか");
+    }
 }
