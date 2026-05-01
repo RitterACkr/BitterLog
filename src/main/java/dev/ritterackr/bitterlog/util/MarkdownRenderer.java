@@ -1,0 +1,98 @@
+package dev.ritterackr.bitterlog.util;
+
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.util.data.MutableDataSet;
+import com.vladsch.flexmark.ext.tables.TablesExtension;
+import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
+
+import java.util.Arrays;
+
+/**
+ * Markdown を HTML に変換するユーティリティクラス<br>
+ * Highlight.js によるシンタックスハイライトに対応した HTML を生成
+ */
+public class MarkdownRenderer {
+
+    private static final Parser parser;
+    private static final HtmlRenderer renderer;
+
+    static {
+        // テーブル・打ち消し線などの拡張機能を有効化
+        MutableDataSet options = new MutableDataSet();
+        options.set(Parser.EXTENSIONS, Arrays.asList(
+                TablesExtension.create(),
+                StrikethroughExtension.create()
+        ));
+
+        parser = Parser.builder(options).build();
+        renderer = HtmlRenderer.builder(options).build();
+    }
+
+    /**
+     * Markdown テキストを HTML に変換する<br>
+     * Highlight.js と CSS を含む完全な HTML ページとして返す
+     * @param markdown Markdownテキスト
+     * @return HTML文字列
+     */
+    public static String render(String markdown) {
+        Node document = parser.parse(markdown);
+        String body = renderer.render(document);
+        return wrapWithTemplate(body);
+    }
+
+    /**
+     * 変換された HTML をテンプレートで包む<br>
+     * Highlight.js によるシンタックスハイライトと CSS を含む
+     * @param body 変換されたHTML本文
+     * @return 完全なHTML文字列
+     */
+    private static String wrapWithTemplate(String body) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <link rel="stylesheet"
+                    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+                <script>hljs.highlightAll();</script>
+                <style>
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                        font-size: 14px;
+                        line-height: 1.6;
+                        padding: 16px;
+                        color: #24292e;
+                    }
+                    pre {
+                        background-color: #f6f8fa;
+                        border-radius: 6px;
+                        padding: 12px;
+                        overflow-x: auto;
+                    }
+                    code {
+                        font-family: 'Consolas', 'Monaco', monospace;
+                        font-size: 13px;
+                    }
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dfe2e5;
+                        padding: 6px 12px;
+                    }
+                    th {
+                        background-color: #f6f8fa;
+                    }
+                </style>
+            </head>
+            <body>
+            """ + body + """
+            </body>
+            </html>
+            """;
+    }
+}
