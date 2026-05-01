@@ -22,7 +22,7 @@ public class MemoDao {
      */
     public int create(Memo memo) throws SQLException {
         String sql = """
-            INSERT INTO memos(title, content, category_id, is_pinned, is_favorite, create_at, updated_at)
+            INSERT INTO memos(title, content, category_id, is_pinned, is_favorite, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """;
 
