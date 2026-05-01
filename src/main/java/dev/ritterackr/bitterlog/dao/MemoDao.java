@@ -142,4 +142,55 @@ public class MemoDao {
                 LocalDateTime.parse(rs.getString("updated_at"))
         );
     }
+
+    /**
+     * タイトル | 本文 でメモを検索
+     * @param keyword 検索キーワード
+     * @return 検索結果のメモリスト
+     * @throws SQLException DB操作失敗時のスタックトレース
+     */
+    public List<Memo> search(String keyword) throws SQLException {
+        String sql = """
+            SELECT * FROM memos WHERE title LIKE ? OR content LIKE ?
+            ORDER BY is_pinned DESC, updated_at DESC
+        """;
+        String pattern = "%" + keyword + "%";
+
+        Connection conn = DatabaseManager.getInstance().getConnection();
+        List<Memo> memos = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, pattern);
+            stmt.setString(2, pattern);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) memos.add(mapResultSet(rs));
+            }
+        }
+        return memos;
+    }
+
+    /**
+     * タグ名からメモを検索
+     * @param tagName タグ名
+     * @return 検索結果のメモリスト
+     * @throws SQLException DB操作失敗時のスタックトレース
+     */
+    public List<Memo> findByTagName(String tagName) throws SQLException {
+        String sql = """
+            SELECT m.* FROM memos m
+            INNER JOIN memo_tags mt ON m.id = mt.memo_id
+            INNER JOIN tags t ON mt.tag_id = t.id
+            WHERE t.name = ?
+            ORDER BY m.is_pinned DESC, m.updated_at DESC
+        """;
+
+        Connection conn = DatabaseManager.getInstance().getConnection();
+        List<Memo> memos = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, tagName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) memos.add(mapResultSet(rs));
+            }
+        }
+        return memos;
+    }
 }

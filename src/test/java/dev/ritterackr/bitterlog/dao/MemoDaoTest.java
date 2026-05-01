@@ -87,4 +87,34 @@ class MemoDaoTest {
         Memo deleted = memoDao.findById(id);
         assertNull(deleted, "削除後にnullが返るか");
     }
+
+    @Test
+    @Order(6)
+    @DisplayName("キーワードからメモを検索できるか")
+    void testSearch() throws SQLException {
+        Memo memo = new Memo("検索キーワードテスト", "特定の内容ABC");
+        memoDao.create(memo);
+
+        List<Memo> results = memoDao.search("ABC");
+        assertFalse(results.isEmpty(), "検索結果が空でないか");
+        assertTrue(results.stream().anyMatch(m -> m.getContent().contains("ABC")),
+                   "検索キーワードを含む面が結果に含まれるか");
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("タグ名でメモを検索できるか")
+    void testFindByTagName() throws SQLException {
+        Memo memo = new Memo("タグ検索テスト", "内容");
+        int memoId = memoDao.create(memo);
+
+        TagDao tagDao = new TagDao();
+        int tagId = tagDao.create("SearchTag");
+        tagDao.addTagToMemo(memoId, tagId);
+
+        List<Memo> results = memoDao.findByTagName("SearchTag");
+        assertFalse(results.isEmpty(), "検索結果が空でないか");
+        assertTrue(results.stream().anyMatch(m -> m.getId() == memoId),
+                   "タグが設定されたメモが結果に含まれるか");
+    }
 }
