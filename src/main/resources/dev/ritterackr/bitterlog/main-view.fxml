@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.*?>
+<?import org.fxmisc.richtext.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="dev.ritterackr.bitterlog.controller.MainController"
+            prefWidth="1200" prefHeight="800">
+
+    <!-- 上部ツールバー -->
+    <top>
+        <ToolBar>
+            <Button fx:id="newMemoBtn" text="新規メモ"/>
+            <Separator/>
+            <TextField fx:id="searchField" promptText="検索..." prefWidth="200"/>
+            <Button fx:id="searchBtn" text="検索"/>
+        </ToolBar>
+    </top>
+
+    <!-- メインコンテンツ -->
+    <center>
+        <SplitPane>
+            <!-- 左側: メモ一覧 -->
+            <VBox prefWidth="250">
+                <ListView fx:id="memoListView" VBox.vgrow="ALWAYS"/>
+            </VBox>
+
+            <!-- 中央: Markdownエディタ -->
+            <VBox prefWidth="450">
+                <TextField fx:id="titleField" promptText="タイトル"/>
+                <CodeArea fx:id="editorArea" VBox.vgrow="ALWAYS"/>
+            </VBox>
+
+            <!-- 右側: プレビュー -->
+            <VBox prefWidth="450">
+                <WebView fx:id="previewView" VBox.vgrow="ALWAYS"/>
+            </VBox>
+        </SplitPane>
+    </center>
+
+</BorderPane>

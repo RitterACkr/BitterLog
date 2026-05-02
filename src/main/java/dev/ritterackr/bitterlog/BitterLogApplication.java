@@ -2,8 +2,8 @@ package dev.ritterackr.bitterlog;
 
 import dev.ritterackr.bitterlog.database.DatabaseManager;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -18,11 +18,13 @@ public class BitterLogApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        // 仮描画
-        StackPane root = new StackPane();
-        Scene scene = new Scene(root, 800, 600);
+        FXMLLoader fxmlLoader = new FXMLLoader(
+                BitterLogApplication.class.getResource("main-view.fxml")
+        );
+        Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle("BitterLog");
         stage.setScene(scene);
+        stage.setMaximized(true);
         stage.show();
     }
 
