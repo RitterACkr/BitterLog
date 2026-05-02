@@ -4,6 +4,7 @@ import dev.ritterackr.bitterlog.dao.MemoDao;
 import dev.ritterackr.bitterlog.model.Memo;
 import dev.ritterackr.bitterlog.util.MarkdownRenderer;
 import javafx.application.Platform;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -32,6 +33,7 @@ public class MainController implements Initializable {
     private final MemoDao memoDao = new MemoDao();
     private Memo currentMemo;
     private boolean isLoading = false;
+    private final JavaBridge javaBridge = new JavaBridge();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -84,6 +86,17 @@ public class MainController implements Initializable {
 
         // SplitPaneの分割位置を指定
         Platform.runLater(() -> splitPane.setDividerPositions(0.2, 0.6));
+
+        // JavaブリッジをWebViewに登録する
+        previewView.getEngine().getLoadWorker().stateProperty().addListener(
+                (obs, oldState, newState) -> {
+                    if (newState == Worker.State.SUCCEEDED) {
+                        netscape.javascript.JSObject window =
+                                (netscape.javascript.JSObject) previewView.getEngine().executeScript("window");
+                        window.setMember("javabridge", javaBridge);
+                    }
+                }
+        );
     }
 
     /**
@@ -151,6 +164,23 @@ public class MainController implements Initializable {
             memoListView.getItems().setAll(results);
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * WebView と Java を繋ぐブリッジクラス
+     */
+    public static class JavaBridge {
+        /**
+         * テキストをクリップボードにコピーする
+         * @param text コピーするテキスト
+         */
+        public void copyToClipboard(String text) {
+            javafx.scene.input.Clipboard clipboard = javafx.scene.input.Clipboard.getSystemClipboard();
+            javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+            content.putString(text);
+            clipboard.setContent(content);
         }
     }
 }

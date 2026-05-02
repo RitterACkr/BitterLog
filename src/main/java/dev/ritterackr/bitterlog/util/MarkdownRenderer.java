@@ -88,6 +88,33 @@ public class MarkdownRenderer {
                         background-color: #f6f8fa;
                     }
                 </style>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.querySelectorAll('pre code').forEach(function(block) {
+                            // コピーボタン
+                            var button = document.createElement('button');
+                            button.textContent = 'Copy';
+                            button.style.cssText = 
+                                'position: absolute; top: 8px; right: 8px; padding: 2px 8px; ' +
+                                'font-size: 12px; cursor: pointer; border: 1px solid #ccc; ' +
+                                'border-radius: 4px; background: #fff;';
+                                
+                            // preタグにボタンを追加
+                            var pre = block.parentNode;
+                            pre.style.position = 'relative';
+                            pre.appendChild(button);
+                            
+                            // クリックでコードをコピー
+                            button.addEventListener('click', function() {
+                                javabridge.copyToClipboard(block.textContent);
+                                button.textContent = 'Copied!';
+                                setTimeout(function() {
+                                    button.textContent = 'Copy';
+                                }, 2000);
+                            });
+                        });
+                    });
+                </script>
             </head>
             <body>
             """ + body + """
