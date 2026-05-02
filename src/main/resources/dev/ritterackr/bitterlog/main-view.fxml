@@ -21,20 +21,20 @@
 
     <!-- メインコンテンツ -->
     <center>
-        <SplitPane>
+        <SplitPane fx:id="splitPane">
             <!-- 左側: メモ一覧 -->
-            <VBox prefWidth="250">
+            <VBox prefWidth="180">
                 <ListView fx:id="memoListView" VBox.vgrow="ALWAYS"/>
             </VBox>
 
             <!-- 中央: Markdownエディタ -->
-            <VBox prefWidth="450">
+            <VBox prefWidth="510">
                 <TextField fx:id="titleField" promptText="タイトル"/>
                 <CodeArea fx:id="editorArea" VBox.vgrow="ALWAYS"/>
             </VBox>
 
             <!-- 右側: プレビュー -->
-            <VBox prefWidth="450">
+            <VBox prefWidth="510">
                 <WebView fx:id="previewView" VBox.vgrow="ALWAYS"/>
             </VBox>
         </SplitPane>

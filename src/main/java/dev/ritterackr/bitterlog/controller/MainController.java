@@ -3,6 +3,7 @@ package dev.ritterackr.bitterlog.controller;
 import dev.ritterackr.bitterlog.dao.MemoDao;
 import dev.ritterackr.bitterlog.model.Memo;
 import dev.ritterackr.bitterlog.util.MarkdownRenderer;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -22,6 +23,7 @@ public class MainController implements Initializable {
     @FXML private Button newMemoBtn;
     @FXML private TextField searchField;
     @FXML private Button searchBtn;
+    @FXML private SplitPane splitPane;
     @FXML private ListView<Memo> memoListView;
     @FXML private TextField titleField;
     @FXML private CodeArea editorArea;
@@ -79,6 +81,9 @@ public class MainController implements Initializable {
                 }
             }
         });
+
+        // SplitPaneの分割位置を指定
+        Platform.runLater(() -> splitPane.setDividerPositions(0.2, 0.6));
     }
 
     /**
