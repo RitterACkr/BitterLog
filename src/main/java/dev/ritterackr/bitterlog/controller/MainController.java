@@ -1,7 +1,9 @@
 package dev.ritterackr.bitterlog.controller;
 
+import dev.ritterackr.bitterlog.dao.ImageDao;
 import dev.ritterackr.bitterlog.dao.MemoDao;
 import dev.ritterackr.bitterlog.model.Memo;
+import dev.ritterackr.bitterlog.util.ImageManager;
 import dev.ritterackr.bitterlog.util.MarkdownRenderer;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
@@ -9,8 +11,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
 import org.fxmisc.richtext.CodeArea;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,6 +28,7 @@ public class MainController implements Initializable {
 
     @FXML private Button newMemoBtn;
     @FXML private TextField searchField;
+    @FXML private Button insertImageBtn;
     @FXML private Button searchBtn;
     @FXML private SplitPane splitPane;
     @FXML private ListView<Memo> memoListView;
@@ -31,6 +37,8 @@ public class MainController implements Initializable {
     @FXML private WebView previewView;
 
     private final MemoDao memoDao = new MemoDao();
+    private final ImageDao imageDao = new ImageDao();
+
     private Memo currentMemo;
     private boolean isLoading = false;
     private final JavaBridge javaBridge = new JavaBridge();
@@ -67,6 +75,15 @@ public class MainController implements Initializable {
 
         // 新規メモ作成ボタン
         newMemoBtn.setOnAction(e -> createNewMemo());
+
+        // 画像挿入ボタン
+        insertImageBtn.setOnAction(e -> insertImageFromFile());
+
+        editorArea.setOnKeyPressed(event -> {
+            if (event.isControlDown() && event.getCode() == javafx.scene.input.KeyCode.V) {
+                pasteImageFromClipboard();
+            }
+        });
 
         // 検索ボタン
         searchBtn.setOnAction(e -> searchMemos());
@@ -147,7 +164,7 @@ public class MainController implements Initializable {
     private void updatePreview(String markdown) {
         if (markdown == null) markdown = "";
         String html = MarkdownRenderer.render(markdown);
-        previewView.getEngine().loadContent(html);
+        previewView.getEngine().loadContent(html, "text/html");
     }
 
     /**
@@ -163,6 +180,61 @@ public class MainController implements Initializable {
             List<Memo> results = memoDao.search(keyword);
             memoListView.getItems().setAll(results);
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * ファイルから画像を挿入
+     */
+    private void insertImageFromFile() {
+        if (currentMemo == null) return;
+
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("画像を選択");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("画像ファイル", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+
+        File file = fileChooser.showOpenDialog(insertImageBtn.getScene().getWindow());
+        if (file == null) return;
+
+        try {
+            String savePath = ImageManager.saveImage(file);
+            String markdownImage = "\n![" + file.getName() + "](file:///" + savePath.replace("\\", "/") + ")\n";
+            editorArea.insertText(editorArea.getCaretPosition(), markdownImage);
+
+            // DBに画像を登録
+            dev.ritterackr.bitterlog.model.Image image =
+                new dev.ritterackr.bitterlog.model.Image(currentMemo.getId(), file.getName(), savePath);
+            imageDao.create(image);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * クリップボードから画像を貼り付け
+     */
+    private void pasteImageFromClipboard() {
+        if (currentMemo == null) return;
+
+        javafx.scene.input.Clipboard clipboard = javafx.scene.input.Clipboard.getSystemClipboard();
+        if (!clipboard.hasImage()) return;
+
+        javafx.scene.image.Image fxImage = clipboard.getImage();
+        BufferedImage bufferedImage = javafx.embed.swing.SwingFXUtils.fromFXImage(fxImage, null);
+
+        try {
+            String savedPath = ImageManager.saveImageFromClipboard(bufferedImage);
+            String markdownImage = "\n![画像](file:///" + savedPath.replace("\\", "/") + ")\n";
+            editorArea.insertText(editorArea.getCaretPosition(), markdownImage);
+
+            // DBに画像を登録
+            dev.ritterackr.bitterlog.model.Image image =
+                new dev.ritterackr.bitterlog.model.Image(currentMemo.getId(), "clipboard_image", savedPath);
+            imageDao.create(image);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

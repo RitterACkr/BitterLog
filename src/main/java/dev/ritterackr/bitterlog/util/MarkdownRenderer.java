@@ -32,14 +32,52 @@ public class MarkdownRenderer {
 
     /**
      * Markdown テキストを HTML に変換する<br>
-     * Highlight.js と CSS を含む完全な HTML ページとして返す
+     * Highlight.js と CSS を含む完全な HTML ページとして返す<br>
+     * ローカル画像パス
      * @param markdown Markdownテキスト
      * @return HTML文字列
      */
     public static String render(String markdown) {
+        markdown = convertLocalImagesToBase64(markdown);
         Node document = parser.parse(markdown);
         String body = renderer.render(document);
         return wrapWithTemplate(body);
+    }
+
+    /**
+     * Markdown内のローカル画像パスをBase64データURIに変換する
+     * @param markdown Markdownテキスト
+     * @return 変換後のMarkdownテキスト
+     */
+    private static String convertLocalImagesToBase64(String markdown) {
+        // ![alt](file:///path/to/image) 形式の検出
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+            "!\\[([^\\]]*)\\]\\(file:///([^)]+)\\)"
+        );
+        java.util.regex.Matcher matcher = pattern.matcher(markdown);
+        StringBuffer sb = new StringBuffer();
+
+        while (matcher.find()) {
+            String alt = matcher.group(1);
+            String path = matcher.group(2);
+            try {
+                java.io.File file = new java.io.File(path);
+                if (file.exists()) {
+                    byte[] bytes = java.nio.file.Files.readAllBytes(file.toPath());
+                    String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                    String ext = path.substring(path.lastIndexOf('.') + 1).toLowerCase();
+                    String mimeType = ext.equals("jpg") || ext.equals("jpeg") ? "image/jpeg" : "image/" + ext;
+                    String dataUri = "data:" + mimeType + ";base64," + base64;
+                    matcher.appendReplacement(sb, java.util.regex.Matcher.quoteReplacement("![" + alt + "](" + dataUri + ")"));
+                } else {
+                    matcher.appendReplacement(sb, java.util.regex.Matcher.quoteReplacement(matcher.group(0)));
+                }
+            } catch (Exception e) {
+                matcher.appendReplacement(sb, matcher.group(0));
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 
     /**

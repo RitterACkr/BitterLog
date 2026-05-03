@@ -146,7 +146,7 @@ public class ImageManager {
      * @throws IOException コピー失敗時のスタックトレース
      */
     private static String copyAsIs(File sourceFile) throws IOException {
-        String saveName = UUID.randomUUID().toString() + "." + getExtension(sourceFile);
+        String saveName = UUID.randomUUID().toString() + "." + getExtension(sourceFile.getName());
         Path destPath = Paths.get(IMAGE_DIR + saveName);
         Files.copy(sourceFile.toPath(), destPath);
         return destPath.toAbsolutePath().toString();

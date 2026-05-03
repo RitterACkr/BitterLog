@@ -18,6 +18,8 @@ public class BitterLogApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        // WebViewでローカルファイルへのアクセスを許可する
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
         FXMLLoader fxmlLoader = new FXMLLoader(
                 BitterLogApplication.class.getResource("main-view.fxml")
         );
