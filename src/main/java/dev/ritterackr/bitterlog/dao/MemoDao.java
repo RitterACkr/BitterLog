@@ -110,14 +110,38 @@ public class MemoDao {
     }
 
     /**
-     * メモを削除
+     * メモを削除<br>
+     * 関連するタグ・画像ファイル・画像DBレコードも合わせて削除
      * @param id 削除するメモID
      * @throws SQLException DB操作失敗時のスタックトレース
      */
     public void delete(int id) throws SQLException {
-        String sql = "DELETE FROM memos WHERE id = ?";
-
         Connection conn = DatabaseManager.getInstance().getConnection();
+
+        // 画像ファイル
+        ImageDao imageDao = new ImageDao();
+        try {
+            List<dev.ritterackr.bitterlog.model.Image> images = imageDao.findByMemoId(id);
+            for (dev.ritterackr.bitterlog.model.Image image : images) {
+                java.nio.file.Files.deleteIfExists(
+                    java.nio.file.Paths.get(image.getFilePath())
+                );
+            }
+            // 画像DBレコードを削除
+            imageDao.deleteByMemoId(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // memo_tagsを削除
+        String deleteTagsSql = "DELETE FROM memo_tags WHERE memo_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(deleteTagsSql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+
+        // メモを削除
+        String sql = "DELETE FROM memos WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
