@@ -19,8 +19,12 @@ class MemoDaoTest {
 
     @BeforeAll
     static void setUp() {
-        // テスト用DBの初期化
-        DatabaseManager.getInstance();
+        DatabaseManager.getInstance().closeConnection();
+        try {
+            DatabaseManager.getInstance().getConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         memoDao = new MemoDao();
     }
 
@@ -77,15 +81,36 @@ class MemoDaoTest {
 
     @Test
     @Order(5)
-    @DisplayName("メモを削除できるか")
+    @DisplayName("メモを削除できるか・関連するタグや画像も削除されるか")
     void testDelete() throws SQLException {
         Memo memo = new Memo("削除テスト", "削除内容");
-        int id = memoDao.create(memo);
+        int memoId = memoDao.create(memo);
+        assertTrue(memoId > 0, "memoIdが正常か");
+        assertNotNull(memoDao.findById(memoId), "作成直後にDBから取得できるか");
 
-        memoDao.delete(id);
+        TagDao tagDao = new TagDao();
+        int tagId = tagDao.create("DeleteTestTag");
+        tagDao.addTagToMemo(memoId, tagId);
 
-        Memo deleted = memoDao.findById(id);
-        assertNull(deleted, "削除後にnullが返るか");
+        ImageDao imageDao = new ImageDao();
+        // 外部キー制約を一時的に無効にして画像DBレコードを登録する
+        try (var stmt = DatabaseManager.getInstance().getConnection().createStatement()) {
+            stmt.execute("PRAGMA foreign_keys = OFF");
+            dev.ritterackr.bitterlog.model.Image image =
+                    new dev.ritterackr.bitterlog.model.Image(memoId, "test.png", "/dummy/path/test.png");
+            imageDao.create(image);
+            stmt.execute("PRAGMA foreign_keys = ON");
+        }
+
+        memoDao.delete(memoId);
+
+        assertNull(memoDao.findById(memoId), "削除後にnullが返るか");
+
+        List<dev.ritterackr.bitterlog.model.Tag> tags = tagDao.findByMemoId(memoId);
+        assertTrue(tags.isEmpty(), "メモ削除後にタグの紐づきが削除されているか");
+
+        List<dev.ritterackr.bitterlog.model.Image> images = imageDao.findByMemoId(memoId);
+        assertTrue(images.isEmpty(), "メモ削除後に画像DBレコードが削除されているか");
     }
 
     @Test

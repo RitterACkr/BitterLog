@@ -46,6 +46,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    systemProperty 'bitterlog.db.path', "${System.getProperty('java.io.tmpdir')}/bitterlog_test.db"
+    forkEvery = 1
 }
 
 jlink {

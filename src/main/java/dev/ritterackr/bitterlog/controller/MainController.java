@@ -100,6 +100,12 @@ public class MainController implements Initializable {
                 }
             }
         });
+        // メモ一覧の右クリックメニュー
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem deleteItem = new MenuItem("削除");
+        deleteItem.setOnAction(e -> deleteCurrentMemo());
+        contextMenu.getItems().add(deleteItem);
+        memoListView.setContextMenu(contextMenu);
 
         // SplitPaneの分割位置を指定
         Platform.runLater(() -> splitPane.setDividerPositions(0.2, 0.6));
@@ -141,6 +147,35 @@ public class MainController implements Initializable {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 現在選択中のメモを削除する
+     */
+    private void deleteCurrentMemo() {
+        Memo selected = memoListView.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+
+        // 確認ダイアログ
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("削除確認");
+        alert.setHeaderText("メモを削除しますか?");
+        alert.setContentText("「" + selected.getTitle() + "」を削除します");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    memoDao.delete(selected.getId());
+                    memoListView.getItems().remove(selected);
+                    currentMemo = null;
+                    titleField.clear();
+                    editorArea.clear();
+                    updatePreview("");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**

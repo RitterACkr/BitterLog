@@ -14,10 +14,14 @@ import java.sql.SQLException;
 public class DatabaseManager {
 
     /** DBファイルを保存するディレクトリ */
-    private static final String DB_DIR = System.getProperty("user.home") + "/BitterLog";
+    private static final String DB_DIR =
+        System.getProperty("bitterlog.db.dir",
+            System.getProperty("user.home") + "/BitterLog");
 
     /** DBファイルのパス */
-    private static final String DB_PATH = DB_DIR + "/bitterlog.db";
+    private static final String DB_PATH =
+        System.getProperty("bitterlog.db.path",
+            DB_DIR + "/bitterlog.db");
 
     /** JDBC接続URL */
     private static final String DB_URL = "jdbc:sqlite:" + DB_PATH;
