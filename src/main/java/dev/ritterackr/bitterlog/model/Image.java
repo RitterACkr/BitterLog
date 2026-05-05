@@ -48,7 +48,7 @@ public class Image {
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
-    public int getMemoId() { return id; }
+    public int getMemoId() { return memoId; }
     public void setMemoId(int memoId) { this.memoId = memoId; }
 
     public String getFileName() { return fileName; }

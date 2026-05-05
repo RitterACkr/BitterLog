@@ -2,6 +2,7 @@ package dev.ritterackr.bitterlog.controller;
 
 import dev.ritterackr.bitterlog.dao.ImageDao;
 import dev.ritterackr.bitterlog.dao.MemoDao;
+import dev.ritterackr.bitterlog.database.DatabaseManager;
 import dev.ritterackr.bitterlog.model.Memo;
 import dev.ritterackr.bitterlog.util.ImageManager;
 import dev.ritterackr.bitterlog.util.MarkdownRenderer;
@@ -240,6 +241,10 @@ public class MainController implements Initializable {
             editorArea.insertText(editorArea.getCaretPosition(), markdownImage);
 
             // DBに画像を登録
+            try (var stmt = DatabaseManager.getInstance().getConnection().createStatement();
+                 var rs = stmt.executeQuery("PRAGMA foreign_keys")) {
+                if (rs.next()) System.out.println("本番foreign_keys: " + rs.getInt(1));
+            }
             dev.ritterackr.bitterlog.model.Image image =
                 new dev.ritterackr.bitterlog.model.Image(currentMemo.getId(), file.getName(), savePath);
             imageDao.create(image);

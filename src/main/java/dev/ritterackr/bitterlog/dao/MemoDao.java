@@ -123,9 +123,12 @@ public class MemoDao {
         try {
             List<dev.ritterackr.bitterlog.model.Image> images = imageDao.findByMemoId(id);
             for (dev.ritterackr.bitterlog.model.Image image : images) {
-                java.nio.file.Files.deleteIfExists(
+                System.out.println("削除対象ファイル: " + image.getFilePath());
+                boolean deleted =
+                        java.nio.file.Files.deleteIfExists(
                     java.nio.file.Paths.get(image.getFilePath())
                 );
+                System.out.println("削除結果: " + deleted);
             }
             // 画像DBレコードを削除
             imageDao.deleteByMemoId(id);
