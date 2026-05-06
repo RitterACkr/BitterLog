@@ -17,6 +17,8 @@
             <Button fx:id="insertImageBtn" text="画像挿入"/>
             <TextField fx:id="searchField" promptText="検索..." prefWidth="200"/>
             <Button fx:id="searchBtn" text="検索"/>
+            <Button fx:id="exportBtn" text="エクスポート"/>
+            <Button fx:id="importBtn" text="インポート"/>
         </ToolBar>
     </top>
 
