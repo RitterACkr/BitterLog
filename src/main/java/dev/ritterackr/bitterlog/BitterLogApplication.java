@@ -24,6 +24,9 @@ public class BitterLogApplication extends Application {
                 BitterLogApplication.class.getResource("main-view.fxml")
         );
         Scene scene = new Scene(fxmlLoader.load());
+        scene.getStylesheets().add(
+            BitterLogApplication.class.getResource("style.css").toExternalForm()
+        );
         stage.setTitle("BitterLog");
         stage.setScene(scene);
         stage.setMaximized(true);

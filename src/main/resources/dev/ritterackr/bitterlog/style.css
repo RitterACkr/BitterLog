@@ -1,0 +1,6 @@
+/* ピン留め・お気に入りボタンの選択時スタイル */
+.toggle-button:selected {
+    -fx-background-color: #f0a500;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}

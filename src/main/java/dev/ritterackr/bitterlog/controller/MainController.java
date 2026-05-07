@@ -34,6 +34,8 @@ public class MainController implements Initializable {
     @FXML private Button searchBtn;
     @FXML private Button exportBtn;
     @FXML private Button importBtn;
+    @FXML private ToggleButton pinBtn;
+    @FXML private ToggleButton favoriteBtn;
     @FXML private SplitPane splitPane;
     @FXML private ListView<Memo> memoListView;
     @FXML private TextField titleField;
@@ -61,6 +63,8 @@ public class MainController implements Initializable {
                         titleField.setText(newVal.getTitle());
                         editorArea.replaceText(newVal.getContent() != null ? newVal.getContent() : "");
                         updatePreview(newVal.getContent());
+                        pinBtn.setSelected(newVal.isPinned());
+                        favoriteBtn.setSelected(newVal.isFavorite());
                         isLoading = false;
                     }
                 }
@@ -97,6 +101,22 @@ public class MainController implements Initializable {
 
         // Importボタン
         importBtn.setOnAction(e -> importData());
+
+        // ピン留めボタン
+        pinBtn.setOnAction(e -> {
+            if (currentMemo == null) return;
+            currentMemo.setPinned(pinBtn.isSelected());
+            saveCurrentMemo();
+            loadMemos();
+        });
+
+        // お気に入りボタン
+        favoriteBtn.setOnAction(e -> {
+            if (currentMemo == null) return;
+            currentMemo.setFavorite(favoriteBtn.isSelected());
+            saveCurrentMemo();
+            loadMemos();
+        });
 
         // メモ一覧のセルの表示を調整
         memoListView.setCellFactory(list -> new ListCell<>() {
