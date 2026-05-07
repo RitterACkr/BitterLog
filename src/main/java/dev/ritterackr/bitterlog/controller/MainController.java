@@ -139,7 +139,7 @@ public class MainController implements Initializable {
             .get("darkMode", "false"));
         if (isDark) {
             darkModeBtn.setSelected(true);
-            darkModeBtn.setText("☀\uFE0F ライトモード");
+            darkModeBtn.setText("☀ ライトモード");
             Platform.runLater(() -> darkModeBtn.getScene().getRoot().getStyleClass().add("dark"));
         }
 
@@ -253,7 +253,8 @@ public class MainController implements Initializable {
      */
     private void updatePreview(String markdown) {
         if (markdown == null) markdown = "";
-        String html = MarkdownRenderer.render(markdown);
+        boolean isDark = darkModeBtn != null && darkModeBtn.isSelected();
+        String html = MarkdownRenderer.render(markdown, isDark);
         previewView.getEngine().loadContent(html, "text/html");
     }
 
@@ -419,11 +420,13 @@ public class MainController implements Initializable {
 
         if (isDark) {
             root.getStyleClass().add("dark");
-            darkModeBtn.setText("☀\uFE0F ライトモード");
+            darkModeBtn.setText("☀ ライトモード");
         } else {
             root.getStyleClass().remove("dark");
             darkModeBtn.setText("\uD83C\uDF19 ダークモード");
         }
+
+        updatePreview(editorArea.getText());
 
         // 設定を保存
         java.util.prefs.Preferences.userNodeForPackage(MainController.class)

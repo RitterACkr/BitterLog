@@ -35,13 +35,17 @@ public class MarkdownRenderer {
      * Highlight.js と CSS を含む完全な HTML ページとして返す<br>
      * ローカル画像パス
      * @param markdown Markdownテキスト
+     * @param isDark ダークモードかどうか
      * @return HTML文字列
      */
-    public static String render(String markdown) {
+    public static String render(String markdown, boolean isDark) {
         markdown = convertLocalImagesToBase64(markdown);
         Node document = parser.parse(markdown);
         String body = renderer.render(document);
-        return wrapWithTemplate(body);
+        return wrapWithTemplate(body, isDark);
+    }
+    public static String render(String markdown) {
+        return render(markdown, false);
     }
 
     /**
@@ -84,9 +88,11 @@ public class MarkdownRenderer {
      * 変換された HTML をテンプレートで包む<br>
      * Highlight.js によるシンタックスハイライトと CSS を含む
      * @param body 変換されたHTML本文
+     * @param isDark ダークモードかどうか
      * @return 完全なHTML文字列
      */
-    private static String wrapWithTemplate(String body) {
+    private static String wrapWithTemplate(String body, boolean isDark) {
+        String bodyClass = isDark ? " class=\"dark\"" : "";
         return """
             <!DOCTYPE html>
             <html>
@@ -125,6 +131,27 @@ public class MarkdownRenderer {
                     th {
                         background-color: #f6f8fa;
                     }
+                    
+                    body.dark {
+                        background-color: #1e1e1e;
+                        color: #ffffff;
+                    }
+                    
+                    body.dark pre {
+                        background-color: #2d2d2d;
+                    }
+                    
+                    body.dark table {
+                        color: #ffffff;
+                    }
+                    
+                    body.dark th {
+                        background-color: #2d2d2d;
+                    }
+                    
+                    body.dark th, body.dark td {
+                        border-color: #3d3d3d;
+                    }
                 </style>
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
@@ -154,8 +181,7 @@ public class MarkdownRenderer {
                     });
                 </script>
             </head>
-            <body>
-            """ + body + """
+            <body""" + bodyClass + ">\n" + body + """
             </body>
             </html>
             """;
