@@ -24,6 +24,7 @@
             <Separator/>
             <ToggleButton fx:id="pinBtn" text="📌 ピン留め"/>
             <ToggleButton fx:id="favoriteBtn" text="⭐ お気に入り"/>
+            <ToggleButton fx:id="filterFavoriteBtn" text="⭐ お気に入りのみ"/>
         </ToolBar>
     </top>
 

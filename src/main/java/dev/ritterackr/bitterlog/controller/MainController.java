@@ -36,6 +36,7 @@ public class MainController implements Initializable {
     @FXML private Button importBtn;
     @FXML private ToggleButton pinBtn;
     @FXML private ToggleButton favoriteBtn;
+    @FXML private ToggleButton filterFavoriteBtn;
     @FXML private SplitPane splitPane;
     @FXML private ListView<Memo> memoListView;
     @FXML private TextField titleField;
@@ -116,6 +117,16 @@ public class MainController implements Initializable {
             currentMemo.setFavorite(favoriteBtn.isSelected());
             saveCurrentMemo();
             loadMemos();
+        });
+
+        filterFavoriteBtn.setOnAction(e -> {
+            if (filterFavoriteBtn.isSelected()) {
+                filterFavoriteBtn.setText("⭐ お気に入りのみ（ON）");
+                filterFavorites();
+            } else {
+                filterFavoriteBtn.setText("⭐ お気に入りのみ");
+                loadMemos();
+            }
         });
 
         // メモ一覧のセルの表示を調整
@@ -367,6 +378,21 @@ public class MainController implements Initializable {
             alert.setHeaderText(null);
             alert.setContentText("インポートに失敗しました");
             alert.showAndWait();
+        }
+    }
+
+    /**
+     * お気に入りメモのみに絞り込む
+     */
+    private void filterFavorites() {
+        try {
+            List<Memo> allMemos = memoDao.findAll();
+            List<Memo> favorites = allMemos.stream()
+                .filter(Memo::isFavorite)
+                .toList();
+            memoListView.getItems().setAll(favorites);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
