@@ -37,6 +37,7 @@ public class MainController implements Initializable {
     @FXML private ToggleButton pinBtn;
     @FXML private ToggleButton favoriteBtn;
     @FXML private ToggleButton filterFavoriteBtn;
+    @FXML private ToggleButton darkModeBtn;
     @FXML private SplitPane splitPane;
     @FXML private ListView<Memo> memoListView;
     @FXML private TextField titleField;
@@ -128,6 +129,19 @@ public class MainController implements Initializable {
                 loadMemos();
             }
         });
+
+        // ダークモードボタン
+        darkModeBtn.setOnAction(e -> toggleDarkMode());
+
+        // 起動時にダークモード設定を復元
+        boolean isDark = "true".equals(java.util.prefs.Preferences
+            .userNodeForPackage(MainController.class)
+            .get("darkMode", "false"));
+        if (isDark) {
+            darkModeBtn.setSelected(true);
+            darkModeBtn.setText("☀\uFE0F ライトモード");
+            Platform.runLater(() -> darkModeBtn.getScene().getRoot().getStyleClass().add("dark"));
+        }
 
         // メモ一覧のセルの表示を調整
         memoListView.setCellFactory(list -> new ListCell<>() {
@@ -394,6 +408,26 @@ public class MainController implements Initializable {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * ダークモードとライトモードの切り替え
+     */
+    private void toggleDarkMode() {
+        var root = darkModeBtn.getScene().getRoot();
+        boolean isDark = darkModeBtn.isSelected();
+
+        if (isDark) {
+            root.getStyleClass().add("dark");
+            darkModeBtn.setText("☀\uFE0F ライトモード");
+        } else {
+            root.getStyleClass().remove("dark");
+            darkModeBtn.setText("\uD83C\uDF19 ダークモード");
+        }
+
+        // 設定を保存
+        java.util.prefs.Preferences.userNodeForPackage(MainController.class)
+            .put("darkMode", String.valueOf(isDark));
     }
 
 
