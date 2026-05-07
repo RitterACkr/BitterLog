@@ -4,6 +4,7 @@ import dev.ritterackr.bitterlog.dao.ImageDao;
 import dev.ritterackr.bitterlog.dao.MemoDao;
 import dev.ritterackr.bitterlog.database.DatabaseManager;
 import dev.ritterackr.bitterlog.model.Memo;
+import dev.ritterackr.bitterlog.util.ExportImportManager;
 import dev.ritterackr.bitterlog.util.ImageManager;
 import dev.ritterackr.bitterlog.util.MarkdownRenderer;
 import javafx.application.Platform;
@@ -31,6 +32,8 @@ public class MainController implements Initializable {
     @FXML private TextField searchField;
     @FXML private Button insertImageBtn;
     @FXML private Button searchBtn;
+    @FXML private Button exportBtn;
+    @FXML private Button importBtn;
     @FXML private SplitPane splitPane;
     @FXML private ListView<Memo> memoListView;
     @FXML private TextField titleField;
@@ -88,6 +91,12 @@ public class MainController implements Initializable {
 
         // 検索ボタン
         searchBtn.setOnAction(e -> searchMemos());
+
+        // Exportボタン
+        exportBtn.setOnAction(e -> exportData());
+
+        // Importボタン
+        importBtn.setOnAction(e -> importData());
 
         // メモ一覧のセルの表示を調整
         memoListView.setCellFactory(list -> new ListCell<>() {
@@ -276,6 +285,68 @@ public class MainController implements Initializable {
             imageDao.create(image);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * データをZIPファイルにエクスポート
+     */
+    private void exportData() {
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("エクスポート先を選択");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("ZIPファイル", "*.zip")
+        );
+        fileChooser.setInitialFileName("bitterlog_export.zip");
+
+        File file = fileChooser.showSaveDialog(exportBtn.getScene().getWindow());
+        if (file == null) return;
+
+        try {
+            ExportImportManager.export(file.getAbsolutePath());
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("エクスポート完了");
+            alert.setHeaderText(null);
+            alert.setContentText("エクスポートが完了しました");
+            alert.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("エクスポートエラー");
+            alert.setHeaderText(null);
+            alert.setContentText("エクスポートに失敗しました");
+            alert.showAndWait();
+        }
+    }
+
+    /**
+     * ZIPファイルからデータをインポート
+     */
+    private void importData() {
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("インポートするZIPファイルを選択");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("ZIPファイル", "*.zip")
+        );
+
+        File file = fileChooser.showOpenDialog(importBtn.getScene().getWindow());
+        if (file == null) return;
+
+        try {
+            ExportImportManager.importData(file.getAbsolutePath());
+            loadMemos();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("インポート完了");
+            alert.setHeaderText(null);
+            alert.setContentText("インポートが完了しました");
+            alert.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("インポートエラー");
+            alert.setHeaderText(null);
+            alert.setContentText("インポートに失敗しました");
+            alert.showAndWait();
         }
     }
 
