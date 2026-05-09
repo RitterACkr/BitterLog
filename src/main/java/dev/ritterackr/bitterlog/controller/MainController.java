@@ -1,8 +1,10 @@
 package dev.ritterackr.bitterlog.controller;
 
+import dev.ritterackr.bitterlog.dao.CategoryDao;
 import dev.ritterackr.bitterlog.dao.ImageDao;
 import dev.ritterackr.bitterlog.dao.MemoDao;
 import dev.ritterackr.bitterlog.database.DatabaseManager;
+import dev.ritterackr.bitterlog.model.Category;
 import dev.ritterackr.bitterlog.model.Memo;
 import dev.ritterackr.bitterlog.util.ExportImportManager;
 import dev.ritterackr.bitterlog.util.ImageManager;
@@ -38,6 +40,9 @@ public class MainController implements Initializable {
     @FXML private ToggleButton favoriteBtn;
     @FXML private ToggleButton filterFavoriteBtn;
     @FXML private ToggleButton darkModeBtn;
+    @FXML private ComboBox<Category> categoryComboBox;
+    @FXML private ComboBox<Category> memoCategoryComboBox;
+    @FXML private Button addCategoryBtn;
     @FXML private SplitPane splitPane;
     @FXML private ListView<Memo> memoListView;
     @FXML private TextField titleField;
@@ -46,6 +51,7 @@ public class MainController implements Initializable {
 
     private final MemoDao memoDao = new MemoDao();
     private final ImageDao imageDao = new ImageDao();
+    private final CategoryDao categoryDao = new CategoryDao();
 
     private Memo currentMemo;
     private boolean isLoading = false;
@@ -58,19 +64,37 @@ public class MainController implements Initializable {
 
         // メモ一覧で選択した際にエディタにも表示
         memoListView.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldVal, newVal) -> {
-                    if (newVal != null) {
-                        isLoading = true;
-                        currentMemo = newVal;
-                        titleField.setText(newVal.getTitle());
-                        editorArea.replaceText(newVal.getContent() != null ? newVal.getContent() : "");
-                        updatePreview(newVal.getContent());
-                        pinBtn.setSelected(newVal.isPinned());
-                        favoriteBtn.setSelected(newVal.isFavorite());
-                        isLoading = false;
+            (obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    isLoading = true;
+                    currentMemo = newVal;
+                    titleField.setText(newVal.getTitle());
+                    editorArea.replaceText(newVal.getContent() != null ? newVal.getContent() : "");
+                    updatePreview(newVal.getContent());
+                    pinBtn.setSelected(newVal.isPinned());
+                    favoriteBtn.setSelected(newVal.isFavorite());
+
+                    // カテゴリを設定
+                    memoCategoryComboBox.getItems().clear();
+                    memoCategoryComboBox.getItems().add(null);
+                    try {
+                        memoCategoryComboBox.getItems().addAll(categoryDao.findAll());
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
                     }
+                    if (newVal.getCategoryId() > 0) {
+                        memoCategoryComboBox.getItems().stream()
+                            .filter(c -> c != null && c.getId() == newVal.getCategoryId())
+                            .findFirst()
+                            .ifPresent(memoCategoryComboBox.getSelectionModel()::select);
+                    } else {
+                        memoCategoryComboBox.getSelectionModel().select(null);
+                    }
+
+                    isLoading = false;
                 }
-        );;
+            }
+        );
 
         // エディタの内容変更時にプレビューを更新
         editorArea.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -129,6 +153,48 @@ public class MainController implements Initializable {
                 loadMemos();
             }
         });
+
+        // カテゴリ一覧を読み込む
+        loadCategories();
+
+        // カテゴリ選択時に絞り込む
+        categoryComboBox.getSelectionModel().selectedItemProperty().addListener(
+            (obs, oldVal, newVal) -> {
+                if (newVal == null) {
+                    loadMemos();
+                } else {
+                    filterByCategory(newVal.getId());
+                }
+            }
+        );
+
+        // カテゴリ追加ボタン
+        addCategoryBtn.setOnAction(e -> addCategory());
+
+        // メモのカテゴリ選択ComboBoxの設定
+        memoCategoryComboBox.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(Category item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "なし" : item.getName());
+            }
+        });
+        memoCategoryComboBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Category item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "なし" : item.getName());
+            }
+        });
+
+        // カテゴリ変更時にメモを保存する
+        memoCategoryComboBox.getSelectionModel().selectedItemProperty().addListener(
+            (obs, oldVal, newVal) -> {
+                if (currentMemo == null || isLoading) return;
+                currentMemo.setCategoryId(newVal != null ? newVal.getId() : 0);
+                saveCurrentMemo();
+            }
+        );
 
         // ダークモードボタン
         darkModeBtn.setOnAction(e -> toggleDarkMode());
@@ -431,6 +497,73 @@ public class MainController implements Initializable {
         // 設定を保存
         java.util.prefs.Preferences.userNodeForPackage(MainController.class)
             .put("darkMode", String.valueOf(isDark));
+    }
+
+    /**
+     * カテゴリ一覧を読み込む<br>
+     * 先頭に全ての選択肢を追加
+     */
+    private void loadCategories() {
+        try {
+            List<Category> categories = categoryDao.findAll();
+            categoryComboBox.getItems().clear();
+            categoryComboBox.getItems().add(null);
+            categoryComboBox.getItems().addAll(categories);
+
+            categoryComboBox.setCellFactory(list -> new ListCell<>() {
+                @Override
+                protected void updateItem(Category item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? "All" : item.getName());
+                }
+            });
+
+            categoryComboBox.setButtonCell(new ListCell<>() {
+                @Override
+                protected void updateItem(Category item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? "All" : item.getName());
+                }
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * カテゴリでメモを絞り込み
+     */
+    private void filterByCategory(int categoryId) {
+        try {
+            List<Memo> allMemos = memoDao.findAll();
+            List<Memo> filtered = allMemos.stream()
+                .filter(m -> m.getCategoryId() == categoryId)
+                .toList();
+            memoListView.getItems().setAll(filtered);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * カテゴリを追加
+     */
+    private void addCategory() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("カテゴリ追加");
+        dialog.setHeaderText(null);
+        dialog.setContentText("カテゴリ名を入力してください");
+
+        dialog.showAndWait().ifPresent(name -> {
+            if (name.isBlank()) return;
+            try {
+                Category category = new Category(name);
+                categoryDao.create(category);
+                loadCategories();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
 

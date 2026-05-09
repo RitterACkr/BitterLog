@@ -35,12 +35,20 @@
         <SplitPane fx:id="splitPane">
             <!-- 左側: メモ一覧 -->
             <VBox prefWidth="180">
+                <HBox spacing="4" style="-fx-padding: 4;">
+                    <ComboBox fx:id="categoryComboBox" promptText="カテゴリ" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button fx:id="addCategoryBtn" text="+"/>
+                </HBox>
                 <ListView fx:id="memoListView" VBox.vgrow="ALWAYS"/>
             </VBox>
 
             <!-- 中央: Markdownエディタ -->
             <VBox prefWidth="510">
                 <TextField fx:id="titleField" promptText="タイトル"/>
+                <HBox spacing="4" style="-fx-padding: 4 0 4 0;">
+                    <Label text="カテゴリ"/>
+                    <ComboBox fx:id="memoCategoryComboBox" promptText="カテゴリを選択" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                </HBox>
                 <CodeArea fx:id="editorArea" VBox.vgrow="ALWAYS"/>
             </VBox>
 
