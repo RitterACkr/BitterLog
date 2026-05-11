@@ -53,6 +53,8 @@ public class MainController implements Initializable {
     // FXMLコンポーネント - サイドバー
     @FXML private ComboBox<Category> categoryComboBox;
     @FXML private Button addCategoryBtn;
+    @FXML private Button editCategoryBtn;
+    @FXML private Button deleteCategoryBtn;
 
     // FXMLコンポーネント - エディタ
     @FXML private VBox editorPane;
@@ -226,9 +228,17 @@ public class MainController implements Initializable {
      */
     private void setupCategoryComboBox() {
         addCategoryBtn.setOnAction(e -> addCategory());
+        editCategoryBtn.setOnAction(e -> editCategory());
+        deleteCategoryBtn.setOnAction(e -> deleteCategory());
 
         categoryComboBox.getSelectionModel().selectedItemProperty().addListener(
             (obs, oldVal, newVal) -> {
+                boolean hasSelection = newVal != null;
+                editCategoryBtn.setDisable(!hasSelection);
+                deleteCategoryBtn.setDisable(!hasSelection);
+
+                if (isLoading) return;
+
                 if (newVal == null) {
                     loadMemos();
                 } else {
@@ -490,10 +500,12 @@ public class MainController implements Initializable {
      */
     private void loadCategories() {
         try {
+            isLoading = true;
             List<Category> categories = categoryDao.findAll();
             categoryComboBox.getItems().clear();
             categoryComboBox.getItems().add(null);
             categoryComboBox.getItems().addAll(categories);
+            isLoading = false;
 
             categoryComboBox.setCellFactory(list -> new ListCell<>() {
                 @Override
@@ -550,7 +562,52 @@ public class MainController implements Initializable {
     }
 
     /**
-     * メモのカテゴリComboBoxを更新する
+     * カテゴリ名を編集
+     */
+    private void editCategory() {
+        Category selected = categoryComboBox.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+
+        Optional<String> result = DialogHelper.showInput(
+            addCategoryBtn.getScene().getWindow(), "カテゴリ編集", "新しいカテゴリ名を入力してください"
+        );
+
+        result.ifPresent(name -> {
+            if (name.isBlank()) return;
+            try {
+                selected.setName(name);
+                categoryDao.update(selected);
+                loadCategories();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    /**
+     * カテゴリを削除
+     */
+    private void deleteCategory() {
+        Category selected = categoryComboBox.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+
+        boolean confirmed = DialogHelper.showConfirm(
+            addCategoryBtn.getScene().getWindow(), "カテゴリ削除", "「" + selected.getName() + "」を削除しますか？"
+        );
+
+        if (confirmed) {
+            try {
+                categoryDao.delete(selected.getId());
+                loadCategories();
+                loadMemos();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * メモのカテゴリComboBoxを更新
      */
     private void updateMemoCategoryComboBox(Memo memo) {
         memoCategoryComboBox.getItems().clear();
