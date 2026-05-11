@@ -40,7 +40,8 @@
                 <TextField fx:id="searchField" promptText="検索..." prefWidth="200"/>
                 <Button fx:id="searchBtn" text="検索"/>
                 <Separator/>
-                <Button fx:id="insertImageBtn" text="画像挿入"/>
+                <ToggleButton fx:id="editModeBtn" text="編集"/>
+                <Button fx:id="insertImageBtn" text="画像挿入" managed="false" visible="false"/>
             </ToolBar>
         </VBox>
     </top>
@@ -58,7 +59,7 @@
             </VBox>
 
             <!-- 中央: Markdownエディタ -->
-            <VBox prefWidth="510">
+            <VBox fx:id="editorPane" prefWidth="510">
                 <TextField fx:id="titleField" promptText="タイトル"/>
                 <HBox spacing="4" style="-fx-padding: 4 0 4 0;">
                     <Label text="カテゴリ"/>

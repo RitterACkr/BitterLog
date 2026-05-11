@@ -14,6 +14,7 @@ import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import org.fxmisc.richtext.CodeArea;
@@ -34,6 +35,7 @@ public class MainController implements Initializable {
     @FXML private Button newMemoBtn;
     @FXML private TextField searchField;
     @FXML private Button searchBtn;
+    @FXML private ToggleButton editModeBtn;
     @FXML private Button insertImageBtn;
 
     // FXMLコンポーネント - メニューバー
@@ -51,6 +53,7 @@ public class MainController implements Initializable {
     @FXML private Button addCategoryBtn;
 
     // FXMLコンポーネント - エディタ
+    @FXML private VBox editorPane;
     @FXML private SplitPane splitPane;
     @FXML private ListView<Memo> memoListView;
     @FXML private TextField titleField;
@@ -101,6 +104,7 @@ public class MainController implements Initializable {
                     pinMenu.setSelected(newVal.isPinned());
                     favoriteMenu.setSelected(newVal.isFavorite());
                     updateMemoCategoryComboBox(newVal);
+                    setEditMode(false);
                     isLoading = false;
                 }
             }
@@ -173,6 +177,11 @@ public class MainController implements Initializable {
         newMemoBtn.setOnAction(e -> createNewMemo());
         searchBtn.setOnAction(e -> searchMemos());
         insertImageBtn.setOnAction(e -> insertImageFromFile());
+
+        // 起動時は閲覧モード
+        setEditMode(false);
+
+        editModeBtn.setOnAction(e -> setEditMode(editModeBtn.isSelected()));
     }
 
     /**
@@ -281,6 +290,7 @@ public class MainController implements Initializable {
             memo.setId(id);
             memoListView.getItems().add(0, memo);
             memoListView.getSelectionModel().select(memo);
+            setEditMode(true);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -576,6 +586,30 @@ public class MainController implements Initializable {
         boolean isDark = darkModeMenu != null && darkModeMenu.isSelected();
         String html = MarkdownRenderer.render(markdown, isDark);
         previewView.getEngine().loadContent(html, "text/html");
+    }
+
+    /**
+     * 編集モードと閲覧モードの切り替え
+     * @param editMode true: 編集モード, false: 閲覧モード
+     */
+    private void setEditMode(boolean editMode) {
+        editorPane.setVisible(editMode);
+        editorPane.setManaged(editMode);
+        insertImageBtn.setVisible(editMode);
+        insertImageBtn.setManaged(editMode);
+        editModeBtn.setSelected(editMode);
+        editModeBtn.setText(editMode ? "閲覧" : "編集");
+
+        if (editMode) {
+            // 編集モード
+            if (!splitPane.getItems().contains(editorPane))
+                splitPane.getItems().add(1, editorPane);
+            Platform.runLater(() -> splitPane.setDividerPositions(0.2, 0.6));
+        } else {
+            // 閲覧モード
+            splitPane.getItems().remove(editorPane);
+            Platform.runLater(() -> splitPane.setDividerPositions(0.25));
+        }
     }
 
     /**
