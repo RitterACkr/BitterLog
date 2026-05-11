@@ -7,6 +7,11 @@
     -fx-font-size: 13px;
 }
 
+.combo-box,
+.tool-bar .button {
+    -fx-padding: 3px 8px;
+}
+
 /* --------------
     メニューバー
  -------------- */
@@ -124,6 +129,23 @@
 
 .text-field:focused {
     -fx-border-color: #c47c2b;
+}
+
+/* --------------------
+    サイドバー セクション
+ -------------------- */
+.sidebar-section-label {
+    -fx-background-color: #d4b896;
+    -fx-text-fill: #2c1810;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 4 8 4 8;
+    -fx-max-width: Infinity;
+}
+
+.dark .sidebar-section-label {
+    -fx-background-color: #3d2510;
+    -fx-text-fill: #f0e6d3;
 }
 
 /* --------------

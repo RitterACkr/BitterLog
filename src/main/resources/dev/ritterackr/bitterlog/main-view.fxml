@@ -51,25 +51,25 @@
         <SplitPane fx:id="splitPane">
             <!-- 左側: メモ一覧 -->
             <VBox prefWidth="200">
-                <Label text="カテゴリ" style="-fx-padding: 6 8 2 8; -fx-font-weight: bold;"/>
-                <HBox spacing="4" style="-fx-padding: 0 4 4 4;">
+                <Label text="カテゴリ" styleClass="sidebar-section-label" style="-fx-padding: 6 8 2 8; -fx-font-weight: bold;"/>
+                <HBox spacing="4" style="-fx-padding: 0 4 4 4;" alignment="CENTER_LEFT">
                     <ComboBox fx:id="categoryComboBox" promptText="すべて" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-                    <Button fx:id="addCategoryBtn" text="+" minWidth="28"/>
-                    <Button fx:id="editCategoryBtn" text="✏" minWidth="28" disable="true"/>
-                    <Button fx:id="deleteCategoryBtn" text="🗑" minWidth="28" disable="true"/>
+                    <Button fx:id="addCategoryBtn" text="+" minWidth="35"/>
+                    <Button fx:id="editCategoryBtn" text="✏" minWidth="40" disable="true"/>
+                    <Button fx:id="deleteCategoryBtn" text="🗑" minWidth="35" disable="true"/>
                 </HBox>
 
                 <Separator/>
 
                 <HBox alignment="CENTER_LEFT" style="-fx-padding: 6 8 2 8;">
-                    <Label text="タグ" style="-fx-font-weight: bold;" HBox.hgrow="ALWAYS"/>
+                    <Label text="タグ" styleClass="sidebar-section-label" style="-fx-font-weight: bold;" HBox.hgrow="ALWAYS"/>
                     <Button fx:id="clearTagFilterBtn" text="✕" minWidth="24" style="-fx-font-size: 10px;"/>
                 </HBox>
                 <ListView fx:id="tagListView" prefHeight="120"/>
 
                 <Separator/>
 
-                <Label text="メモ" style="-fx-padding: 6 8 2 8; -fx-font-weight: bold;"/>
+                <Label text="メモ" styleClass="sidebar-section-label" style="-fx-padding: 6 8 2 8; -fx-font-weight: bold;"/>
                 <ListView fx:id="memoListView" VBox.vgrow="ALWAYS"/>
             </VBox>
 
