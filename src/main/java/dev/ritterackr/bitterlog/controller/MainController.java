@@ -3,9 +3,11 @@ package dev.ritterackr.bitterlog.controller;
 import dev.ritterackr.bitterlog.dao.CategoryDao;
 import dev.ritterackr.bitterlog.dao.ImageDao;
 import dev.ritterackr.bitterlog.dao.MemoDao;
+import dev.ritterackr.bitterlog.dao.TagDao;
 import dev.ritterackr.bitterlog.database.DatabaseManager;
 import dev.ritterackr.bitterlog.model.Category;
 import dev.ritterackr.bitterlog.model.Memo;
+import dev.ritterackr.bitterlog.model.Tag;
 import dev.ritterackr.bitterlog.util.DialogHelper;
 import dev.ritterackr.bitterlog.util.ExportImportManager;
 import dev.ritterackr.bitterlog.util.ImageManager;
@@ -55,6 +57,8 @@ public class MainController implements Initializable {
     @FXML private Button addCategoryBtn;
     @FXML private Button editCategoryBtn;
     @FXML private Button deleteCategoryBtn;
+    @FXML private ListView<Tag> tagListView;
+    @FXML private Button clearTagFilterBtn;
 
     // FXMLコンポーネント - エディタ
     @FXML private VBox editorPane;
@@ -62,6 +66,7 @@ public class MainController implements Initializable {
     @FXML private ListView<Memo> memoListView;
     @FXML private TextField titleField;
     @FXML private ComboBox<Category> memoCategoryComboBox;
+    @FXML private TextField tagField;
     @FXML private CodeArea editorArea;
     @FXML private WebView previewView;
 
@@ -69,6 +74,7 @@ public class MainController implements Initializable {
     private final MemoDao memoDao = new MemoDao();
     private final ImageDao imageDao = new ImageDao();
     private final CategoryDao categoryDao = new CategoryDao();
+    private final TagDao tagDao = new TagDao();
 
     // State
     private Memo currentMemo;
@@ -80,6 +86,7 @@ public class MainController implements Initializable {
         loadMemos();
         loadCategories();
         setupMemoListView();
+        setupTagListView();
         setupEditor();
         setupToolbar();
         setupMenuBar();
@@ -108,6 +115,7 @@ public class MainController implements Initializable {
                     pinMenu.setSelected(newVal.isPinned());
                     favoriteMenu.setSelected(newVal.isFavorite());
                     updateMemoCategoryComboBox(newVal);
+                    loadTags(newVal);
                     setEditMode(false);
                     isLoading = false;
                 }
@@ -131,6 +139,42 @@ public class MainController implements Initializable {
         deleteItem.setOnAction(e -> deleteCurrentMemo());
         contextMenu.getItems().add(deleteItem);
         memoListView.setContextMenu(contextMenu);
+    }
+
+    /**
+     * タグ一覧の設定
+     */
+    private void setupTagListView() {
+        loadTagList();
+
+        tagListView.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(Tag tag, boolean empty) {
+                super.updateItem(tag, empty);
+                setText(empty || tag == null ? null : "# " + tag.getName());
+            }
+        });
+
+        tagListView.getSelectionModel().selectedItemProperty().addListener(
+            (obs, oldVal, newVal) -> {
+                if (newVal == null) return;
+                clearTagFilterBtn.setDisable(false);
+                try {
+                    List<Memo> memos = memoDao.findByTagName(newVal.getName());
+                    memoListView.getItems().setAll(memos);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        );
+
+        // 解除
+        clearTagFilterBtn.setDisable(true);
+        clearTagFilterBtn.setOnAction(e -> {
+            tagListView.getSelectionModel().clearSelection();
+            clearTagFilterBtn.setDisable(true);
+            loadMemos();
+        });
     }
 
     /**
@@ -172,6 +216,11 @@ public class MainController implements Initializable {
                 saveCurrentMemo();
             }
         );
+
+        // タグ変更時に保存
+        tagField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal && currentMemo != null && !isLoading) saveTags();
+        });
     }
 
     /**
@@ -624,6 +673,62 @@ public class MainController implements Initializable {
                 .ifPresent(memoCategoryComboBox.getSelectionModel()::select);
         } else {
             memoCategoryComboBox.getSelectionModel().select(null);
+        }
+    }
+
+
+    /* -----------------
+       タグ操作メソッド
+     ----------------- */
+    private void saveTags() {
+        if (currentMemo == null) return;
+
+        try {
+            // 既存タグの削除
+            tagDao.removeAllTagsFromMemo(currentMemo.getId());
+
+            // 入力されたタグの保存
+            String tagText = tagField.getText();
+            if (tagText == null || tagText.isBlank()) return;
+
+            String[] tagNames = tagText.split(",");
+            for (String tagName : tagNames) {
+                String trimmed = tagName.trim();
+                if (trimmed.isBlank()) continue;
+                int tagId = tagDao.create(trimmed);
+                tagDao.addTagToMemo(currentMemo.getId(), tagId);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        loadTagList();
+    }
+
+    /**
+     * タグの読み込み
+     */
+    private void loadTags(Memo memo) {
+        try {
+            List<Tag> tags = tagDao.findByMemoId(memo.getId());
+            String tagText = tags.stream()
+                .map(Tag::getName)
+                .collect(java.util.stream.Collectors.joining(", "));
+            tagField.setText(tagText);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * タグ一覧の読み込み
+     */
+    private void loadTagList() {
+        try {
+            List<Tag> tags = tagDao.findAll();
+            tagListView.getItems().setAll(tags);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

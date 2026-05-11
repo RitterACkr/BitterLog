@@ -50,13 +50,26 @@
     <center>
         <SplitPane fx:id="splitPane">
             <!-- 左側: メモ一覧 -->
-            <VBox prefWidth="180">
-                <HBox spacing="4" style="-fx-padding: 4;">
-                    <ComboBox fx:id="categoryComboBox" promptText="カテゴリ" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-                    <Button fx:id="addCategoryBtn" text="+" minWidth="35"/>
-                    <Button fx:id="editCategoryBtn" text="✏" minWidth="40" disable="true"/>
-                    <Button fx:id="deleteCategoryBtn" text="🗑" minWidth="35" disable="true"/>
+            <VBox prefWidth="200">
+                <Label text="カテゴリ" style="-fx-padding: 6 8 2 8; -fx-font-weight: bold;"/>
+                <HBox spacing="4" style="-fx-padding: 0 4 4 4;">
+                    <ComboBox fx:id="categoryComboBox" promptText="すべて" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button fx:id="addCategoryBtn" text="+" minWidth="28"/>
+                    <Button fx:id="editCategoryBtn" text="✏" minWidth="28" disable="true"/>
+                    <Button fx:id="deleteCategoryBtn" text="🗑" minWidth="28" disable="true"/>
                 </HBox>
+
+                <Separator/>
+
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 6 8 2 8;">
+                    <Label text="タグ" style="-fx-font-weight: bold;" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="clearTagFilterBtn" text="✕" minWidth="24" style="-fx-font-size: 10px;"/>
+                </HBox>
+                <ListView fx:id="tagListView" prefHeight="120"/>
+
+                <Separator/>
+
+                <Label text="メモ" style="-fx-padding: 6 8 2 8; -fx-font-weight: bold;"/>
                 <ListView fx:id="memoListView" VBox.vgrow="ALWAYS"/>
             </VBox>
 
@@ -66,6 +79,10 @@
                 <HBox spacing="4" style="-fx-padding: 4 0 4 0;">
                     <Label text="カテゴリ"/>
                     <ComboBox fx:id="memoCategoryComboBox" promptText="カテゴリを選択" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                </HBox>
+                <HBox spacing="4" style="-fx-padding: 0 0 4 0;">
+                    <Label text="タグ:"/>
+                    <TextField fx:id="tagField" promptText="タグをカンマ区切りで入力 (ex: aaa, tips)" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <CodeArea fx:id="editorArea" VBox.vgrow="ALWAYS"/>
             </VBox>
