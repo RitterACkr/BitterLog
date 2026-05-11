@@ -6,6 +6,7 @@ import dev.ritterackr.bitterlog.dao.MemoDao;
 import dev.ritterackr.bitterlog.database.DatabaseManager;
 import dev.ritterackr.bitterlog.model.Category;
 import dev.ritterackr.bitterlog.model.Memo;
+import dev.ritterackr.bitterlog.util.DialogHelper;
 import dev.ritterackr.bitterlog.util.ExportImportManager;
 import dev.ritterackr.bitterlog.util.ImageManager;
 import dev.ritterackr.bitterlog.util.MarkdownRenderer;
@@ -24,6 +25,7 @@ import java.io.File;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -319,25 +321,22 @@ public class MainController implements Initializable {
         if (selected == null) return;
 
         // 確認ダイアログ
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("削除確認");
-        alert.setHeaderText("メモを削除しますか?");
-        alert.setContentText("「" + selected.getTitle() + "」を削除します");
+        boolean confirmed = DialogHelper.showConfirm(
+            memoListView.getScene().getWindow(), "削除確認", "「" + selected.getTitle() + "」を削除します"
+        );
 
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                try {
-                    memoDao.delete(selected.getId());
-                    memoListView.getItems().remove(selected);
-                    currentMemo = null;
-                    titleField.clear();
-                    editorArea.clear();
-                    updatePreview("");
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+        if (confirmed) {
+            try {
+                memoDao.delete(selected.getId());
+                memoListView.getItems().remove(selected);
+                currentMemo = null;
+                titleField.clear();
+                editorArea.clear();
+                updatePreview("");
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        });
+        }
     }
 
     /**
@@ -535,16 +534,14 @@ public class MainController implements Initializable {
      * カテゴリを追加
      */
     private void addCategory() {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("カテゴリ追加");
-        dialog.setHeaderText(null);
-        dialog.setContentText("カテゴリ名を入力してください");
+        Optional<String> result = DialogHelper.showInput(
+            addCategoryBtn.getScene().getWindow(), "カテゴリ追加", "カテゴリ名を入力してください"
+        );
 
-        dialog.showAndWait().ifPresent(name -> {
+        result.ifPresent(name -> {
             if (name.isBlank()) return;
             try {
-                Category category = new Category(name);
-                categoryDao.create(category);
+                categoryDao.create(new Category(name));
                 loadCategories();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -637,22 +634,14 @@ public class MainController implements Initializable {
      * 情報ダイアログの表示
      */
     private void showInfo(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        DialogHelper.showInfo(newMemoBtn.getScene().getWindow(), title, message);
     }
 
     /**
      * エラーダイアログの表示
      */
     private void showError(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        DialogHelper.showError(newMemoBtn.getScene().getWindow(), title, message);
     }
 
     /**
