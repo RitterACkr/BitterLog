@@ -1,119 +1,372 @@
-/* -----------
- 共通スタイル
- ----------- */
+/* --------------
+    共通スタイル
+ -------------- */
+.root {
+    -fx-background-color: #fdf6ec;
+    -fx-font-family: 'Segoe UI', 'Yu Gothic UI', sans-serif;
+    -fx-font-size: 13px;
+}
+
+/* --------------
+    メニューバー
+ -------------- */
+.menu-bar {
+    -fx-background-color: #2c1810;
+    -fx-padding: 2px;
+}
+
+.menu-bar .label {
+    -fx-text-fill: #f0e6d3;
+    -fx-font-size: 13px;
+}
+
+.menu-bar .menu:hover,
+.menu-bar .menu:focused,
+.menu-bar .menu:showing {
+    -fx-background-color: #8b5e3c;
+}
+
+.context-menu {
+    -fx-background-color: #2c1810;
+    -fx-border-color: #8b5e3c;
+    -fx-border-width: 1px;
+}
+
+.menu-item {
+    -fx-background-color: transparent;
+}
+
+.menu-item .label {
+    -fx-text-fill: #f0e6d3;
+}
+
+.menu-item:focused {
+    -fx-background-color: #8b5e3c;
+}
+
+.check-menu-item:checked .label {
+    -fx-text-fill: #c47c2b;
+}
+
+/* --------------
+    ツールバー
+ -------------- */
+.tool-bar {
+-fx-background-color: #f5e6d3;
+-fx-border-color: #d4b896;
+-fx-border-width: 0 0 1px 0;
+-fx-padding: 6px 8px;
+-fx-spacing: 6px;
+}
+
+.tool-bar > .container {
+-fx-background-color: #f5e6d3;
+}
+
+.tool-bar > .container > .padding {
+-fx-background-color: #f5e6d3;
+}
+
+/* --------------
+ ボタン
+-------------- */
+.button {
+    -fx-background-color: #8b5e3c;
+    -fx-text-fill: #fdf6ec;
+    -fx-background-radius: 4px;
+    -fx-padding: 5px 12px;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+}
+
+.button:hover {
+    -fx-background-color: #c47c2b;
+}
+
+.button:pressed {
+    -fx-background-color: #2c1810:
+}
+
+ /* --------------
+     トグルボタン
+  -------------- */
+.toggle-button {
+    -fx-background-color: #8b5e3c;
+    -fx-text-fill: #fdf6ec;
+    -fx-background-radius: 4px;
+    -fx-padding 5px 12px;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+}
+
+.toggle-button:hover {
+    -fx-background-color: #c47c2b;
+}
+
 .toggle-button:selected {
-    -fx-background-color: #f0a500;
-    -fx-text-fill: white;
+    -fx-background-color: #2c1810;
+    -fx-text-fill: #c47c2b;
     -fx-font-weight: bold;
 }
 
-/* -----------
- ライトモード
- ----------- */
-
-.root {
-    -fx-background-color: #f5f5f5;
+/* -----------------
+    テキストフィールド
+ ----------------- */
+.text-field {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #2c1810;
+    -fx-border-color: #d4b896;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 5px 8px;
 }
 
+.text-field:focused {
+    -fx-border-color: #c47c2b;
+}
+
+/* --------------
+    リストビュー
+ -------------- */
 .list-view {
+    -fx-background-color: #fdf6ec;
+    -fx-border-color: #d4b896;
+    -fx-border-width: 0 1px 0 0;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #2c1810;
+    -fx-padding: 8px 10px;
+    -fx-border-color: transparent transparent #f0dcc8 transparent;
+    -fx-border-width: 1px;
+}
+
+.list-cell:hover {
+    -fx-background-color: #f5e6d3;
+}
+
+.list-cell:selected {
+    -fx-background-color: #c47c2b;
+    -fx-text-fill: #ffffff;
+}
+
+/* --------------
+    SplitPane
+ -------------- */
+.split-pane {
+    -fx-background-color: #fdf6ec;
+    -fx-padding: 0;
+}
+
+.split-pane-divider {
+    -fx-background-color: #d4b896;
+    -fx-padding: 0 1px;
+}
+
+/* --------------
+    ComboBox
+ -------------- */
+.combo-box {
     -fx-background-color: #ffffff;
-    -fx-border-color: #e0e0e0;
+    -fx-border-color: #d4b896;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
 }
 
-.list-cell::selected {
-    -fx-background-color: #4f46e5;
-    -fx-text-fill: white;
+.combo-box .list-cell {
+    -fx-text-fill: #2c1810;
+    -fx-border-color: transparent;
 }
 
-.text-filed {
+.combo-box-popup .list-view {
     -fx-background-color: #ffffff;
-    -fx-text-fill: #000000;
-    -fx-border-color: #e0e0e0;
+    -fx-border-color: #d4b896;
 }
 
-.tool-bar {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #e0e0e0;
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #f5e6d3;
 }
 
-/* ----------
- ダークモード
- ---------- */
- .dark .root {
-    -fx-background-color: #1e1e1e;
- }
-
- .dark .list-view {
-    -fx-background-color: #2d2d2d;
-    -fx-border-color: #3d3d3d;
- }
-
- .dark .list-cell {
-    -fx-background-color: #2d2d2d;
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #c47c2b;
     -fx-text-fill: #ffffff;
- }
+}
 
- .dark .list-cell:selected {
-    -fx-background-color: #4f46e5;
-    -fx-text-fill: white;
- }
+/* --------------
+    スクロールバー
+ -------------- */
+.scroll-bar {
+    -fx-background-color: #f5e6d3;
+}
 
- .dark .text-field {
-    -fx-background-color: #2d2d2d;
+.scroll-bar .thumb {
+    -fx-background-color: #d4b896;
+    -fx-background-radius: 4px;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #8b5e3c;
+}
+
+/* --------------
+    ダイアログ
+ -------------- */
+.dialog-pane {
+    -fx-background-color: #fdf6ec;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #2c1810;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: #f0e6d3;
+}
+
+/* --------------
+    ダークモード
+ -------------- */
+.dark .root {
+    -fx-background-color: #1e1008;
+}
+
+.dark .menu-bar {
+    -fx-background-color: #0f0804;
+}
+
+.dark .tool-bar {
+    -fx-background-color: #2a1a0e;
+    -fx-border-color: #3d2510;
+}
+
+.dark .tool-bar > .container {
+    -fx-background-color: #2a1a0e;
+}
+
+.dark .tool-bar > .container > .padding {
+    -fx-background-color: #2a1a0e;
+}
+
+.dark .button {
+    -fx-background-color: #3d2510;
+    -fx-text-fill: #f0e6d3;
+}
+
+.dark .button:hover {
+    -fx-background-color: #c47c2b;
+}
+
+.dark .toggle-button {
+    -fx-background-color: #3d2510;
+    -fx-text-fill: #f0e6d3;
+}
+
+.dark .toggle-button:selected {
+    -fx-background-color: #0f0804;
+    -fx-text-fill: #c47c2b;
+}
+
+.dark .text-field {
+    -fx-background-color: #2a1a0e;
+    -fx-text-fill: #f0e6d3;
+    -fx-border-color: #3d2510;
+}
+
+.dark .text-field:focused {
+    -fx-border-color: #c47c2b;
+}
+
+.dark .list-view {
+    -fx-background-color: #1e1008;
+    -fx-border-color: #3d2510;
+}
+
+.dark .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f0e6d3;
+    -fx-border-color: transparent transparent #2a1a0e transparent;
+}
+
+.dark .list-cell:hover {
+    -fx-background-color: #2a1a0e;
+}
+
+.dark .list-cell:selected {
+    -fx-background-color: #c47c2b;
     -fx-text-fill: #ffffff;
-    -fx-border-color: #3d3d3d;
- }
+}
 
- .dark .button {
-    -fx-background-color: #3d3d3d;
-    -fx-text-fill: #ffffff;
- }
+.dark .split-pane {
+    -fx-background-color: #1e1008;
+}
 
- .dark .toggle-button {
-    -fx-background-color: #3d3d3d;
-    -fx-text-fill: #ffffff;
- }
+.dark .split-pane-divider {
+    -fx-background-color: #3d2510;
+}
 
- .dark .split-pane {
-    -fx-background-color: #1e1e1e;
- }
+.dark .combo-box {
+    -fx-background-color: #2a1a0e;
+    -fx-border-color: #3d2510;
+}
 
- .dark .split-pane-divider {
-    -fx-background-color: #3d3d3d;
- }
+.dark .combo-box .list-cell {
+    -fx-text-fill: #f0e6d3;
+}
 
- .dark .tool-bar {
-    -fx-background-color: #2d2d2d;
-    -fx-border-color: #3d3d3d;
- }
+.dark .combo-box-popup .list-view {
+    -fx-background-color: #2a1a0e;
+    -fx-border-color: #3d2510;
+}
 
- .dark .tool-bar .container {
-    -fx-background-color: #2d2d2d;
- }
+.dark .combo-box-popup .list-cell {
+    -fx-text-fill: #f0e6d3;
+}
 
- .dark .tool-bar > .container > .padding {
-    -fx-background-color: #2d2d2d;
- }
+.dark .combo-box-popup .list-cell:hover {
+    -fx-background-color: #3d2510;
+}
 
- /* ----------------
-  ダークモード CodeArea
-  ---------------- */
+.dark .scroll-bar {
+    -fx-background-color: #2a1a0e;
+}
+
+.dark .scroll-bar .thumb {
+    -fx-background-color: #3d2510;
+}
+
+.dark .scroll-bar .thumb:hover {
+    -fx-background-color: #c47c2b;
+}
+
+/* ---------------------
+    CodeAreaダークモード
+ --------------------- */
 .dark .code-area {
-    -fx-background-color: #2d2d2d;
+    -fx-background-color: #3d2a1e;
 }
 
 .dark .code-area .content {
-    -fx-background -color: #2d2d2d;
+    -fx-background-color: #3d2a1e;
 }
 
 .dark .code-area .text {
-    -fx-fill: #ffffff;
+    -fx-fill: #e8d5c0;
 }
 
 .dark .code-area .caret {
-    -fx-stroke: #ffffff;
+    -fx-stroke: #e8d5c0;
 }
 
 .dark .virtual-flow {
-    -fx-background-color: #2d2d2d;
+    -fx-background-color: #3d2a1e;
+}
+
+.dark .code-area .scroll-pane {
+    -fx-background-color: #3d2a1e;
+}
+
+.dark .code-area .scroll-pane .viewport {
+    -fx-background-color: #3d2a1e;
 }
