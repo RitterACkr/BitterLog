@@ -30,39 +30,66 @@ import java.util.ResourceBundle;
  */
 public class MainController implements Initializable {
 
+    // FXMLコンポーネント - ツールバー
     @FXML private Button newMemoBtn;
     @FXML private TextField searchField;
-    @FXML private Button insertImageBtn;
     @FXML private Button searchBtn;
-    @FXML private Button exportBtn;
-    @FXML private Button importBtn;
-    @FXML private ToggleButton pinBtn;
-    @FXML private ToggleButton favoriteBtn;
-    @FXML private ToggleButton filterFavoriteBtn;
-    @FXML private ToggleButton darkModeBtn;
+    @FXML private Button insertImageBtn;
+
+    // FXMLコンポーネント - メニューバー
+    @FXML private MenuItem newMemoMenu;
+    @FXML private MenuItem exportMenu;
+    @FXML private MenuItem importMenu;
+    @FXML private CheckMenuItem darkModeMenu;
+    @FXML private CheckMenuItem filterFavoriteMenu;
+    @FXML private CheckMenuItem pinMenu;
+    @FXML private CheckMenuItem favoriteMenu;
+    @FXML private MenuItem addCategoryMenu;
+
+    // FXMLコンポーネント - サイドバー
     @FXML private ComboBox<Category> categoryComboBox;
-    @FXML private ComboBox<Category> memoCategoryComboBox;
     @FXML private Button addCategoryBtn;
+
+    // FXMLコンポーネント - エディタ
     @FXML private SplitPane splitPane;
     @FXML private ListView<Memo> memoListView;
     @FXML private TextField titleField;
+    @FXML private ComboBox<Category> memoCategoryComboBox;
     @FXML private CodeArea editorArea;
     @FXML private WebView previewView;
 
+    // DAO
     private final MemoDao memoDao = new MemoDao();
     private final ImageDao imageDao = new ImageDao();
     private final CategoryDao categoryDao = new CategoryDao();
 
+    // State
     private Memo currentMemo;
     private boolean isLoading = false;
     private final JavaBridge javaBridge = new JavaBridge();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // メモ一覧の読み込み
         loadMemos();
+        loadCategories();
+        setupMemoListView();
+        setupEditor();
+        setupToolbar();
+        setupMenuBar();
+        setupCategoryComboBox();
+        setupDarkMode();
+        setupWebViewBridge();
+        Platform.runLater(() -> splitPane.setDividerPositions(0.2, 0.6));
+    }
 
-        // メモ一覧で選択した際にエディタにも表示
+    /* -----------------
+        セットアップ
+     ----------------- */
+
+    /**
+     * メモ一覧の設定
+     */
+    private void setupMemoListView() {
         memoListView.getSelectionModel().selectedItemProperty().addListener(
             (obs, oldVal, newVal) -> {
                 if (newVal != null) {
@@ -71,47 +98,43 @@ public class MainController implements Initializable {
                     titleField.setText(newVal.getTitle());
                     editorArea.replaceText(newVal.getContent() != null ? newVal.getContent() : "");
                     updatePreview(newVal.getContent());
-                    pinBtn.setSelected(newVal.isPinned());
-                    favoriteBtn.setSelected(newVal.isFavorite());
-
-                    // カテゴリを設定
-                    memoCategoryComboBox.getItems().clear();
-                    memoCategoryComboBox.getItems().add(null);
-                    try {
-                        memoCategoryComboBox.getItems().addAll(categoryDao.findAll());
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }
-                    if (newVal.getCategoryId() > 0) {
-                        memoCategoryComboBox.getItems().stream()
-                            .filter(c -> c != null && c.getId() == newVal.getCategoryId())
-                            .findFirst()
-                            .ifPresent(memoCategoryComboBox.getSelectionModel()::select);
-                    } else {
-                        memoCategoryComboBox.getSelectionModel().select(null);
-                    }
-
+                    pinMenu.setSelected(newVal.isPinned());
+                    favoriteMenu.setSelected(newVal.isFavorite());
+                    updateMemoCategoryComboBox(newVal);
                     isLoading = false;
                 }
             }
         );
 
-        // エディタの内容変更時にプレビューを更新
+        memoListView.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(Memo memo, boolean empty) {
+                super.updateItem(memo, empty);
+                if (empty || memo == null) {
+                    setText(null);
+                } else {
+                    setText(memo.getTitle().isEmpty() ? " (タイトルなし) " : memo.getTitle());
+                }
+            }
+        });
+
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem deleteItem = new MenuItem("削除");
+        deleteItem.setOnAction(e -> deleteCurrentMemo());
+        contextMenu.getItems().add(deleteItem);
+        memoListView.setContextMenu(contextMenu);
+    }
+
+    /**
+     * エディタの設定
+     */
+    private void setupEditor() {
         editorArea.textProperty().addListener((obs, oldVal, newVal) -> {
             updatePreview(newVal);
             saveCurrentMemo();
         });
 
-        // タイトル変更時に保存
-        titleField.textProperty().addListener((obs, oldVal, newVal) -> {
-            saveCurrentMemo();
-        });
-
-        // 新規メモ作成ボタン
-        newMemoBtn.setOnAction(e -> createNewMemo());
-
-        // 画像挿入ボタン
-        insertImageBtn.setOnAction(e -> insertImageFromFile());
+        titleField.textProperty().addListener((obs, oldVal, newVal) -> saveCurrentMemo());
 
         editorArea.setOnKeyPressed(event -> {
             if (event.isControlDown() && event.getCode() == javafx.scene.input.KeyCode.V) {
@@ -119,59 +142,7 @@ public class MainController implements Initializable {
             }
         });
 
-        // 検索ボタン
-        searchBtn.setOnAction(e -> searchMemos());
-
-        // Exportボタン
-        exportBtn.setOnAction(e -> exportData());
-
-        // Importボタン
-        importBtn.setOnAction(e -> importData());
-
-        // ピン留めボタン
-        pinBtn.setOnAction(e -> {
-            if (currentMemo == null) return;
-            currentMemo.setPinned(pinBtn.isSelected());
-            saveCurrentMemo();
-            loadMemos();
-        });
-
-        // お気に入りボタン
-        favoriteBtn.setOnAction(e -> {
-            if (currentMemo == null) return;
-            currentMemo.setFavorite(favoriteBtn.isSelected());
-            saveCurrentMemo();
-            loadMemos();
-        });
-
-        filterFavoriteBtn.setOnAction(e -> {
-            if (filterFavoriteBtn.isSelected()) {
-                filterFavoriteBtn.setText("⭐ お気に入りのみ（ON）");
-                filterFavorites();
-            } else {
-                filterFavoriteBtn.setText("⭐ お気に入りのみ");
-                loadMemos();
-            }
-        });
-
-        // カテゴリ一覧を読み込む
-        loadCategories();
-
-        // カテゴリ選択時に絞り込む
-        categoryComboBox.getSelectionModel().selectedItemProperty().addListener(
-            (obs, oldVal, newVal) -> {
-                if (newVal == null) {
-                    loadMemos();
-                } else {
-                    filterByCategory(newVal.getId());
-                }
-            }
-        );
-
-        // カテゴリ追加ボタン
-        addCategoryBtn.setOnAction(e -> addCategory());
-
-        // メモのカテゴリ選択ComboBoxの設定
+        // メモカテゴリComboBoxの設定
         memoCategoryComboBox.setCellFactory(list -> new ListCell<>() {
             @Override
             protected void updateItem(Category item, boolean empty) {
@@ -186,8 +157,6 @@ public class MainController implements Initializable {
                 setText(empty || item == null ? "なし" : item.getName());
             }
         });
-
-        // カテゴリ変更時にメモを保存する
         memoCategoryComboBox.getSelectionModel().selectedItemProperty().addListener(
             (obs, oldVal, newVal) -> {
                 if (currentMemo == null || isLoading) return;
@@ -195,53 +164,100 @@ public class MainController implements Initializable {
                 saveCurrentMemo();
             }
         );
+    }
 
-        // ダークモードボタン
-        darkModeBtn.setOnAction(e -> toggleDarkMode());
+    /**
+     * ツールバーの設定
+     */
+    private void setupToolbar() {
+        newMemoBtn.setOnAction(e -> createNewMemo());
+        searchBtn.setOnAction(e -> searchMemos());
+        insertImageBtn.setOnAction(e -> insertImageFromFile());
+    }
 
-        // 起動時にダークモード設定を復元
+    /**
+     * メニューバーの設定
+     */
+    private void setupMenuBar() {
+        newMemoMenu.setOnAction(e -> createNewMemo());
+        exportMenu.setOnAction(e -> exportData());
+        importMenu.setOnAction(e -> importData());
+
+        darkModeMenu.setOnAction(e -> toggleDarkMode(darkModeMenu.isSelected()));
+
+        filterFavoriteMenu.setOnAction(e -> {
+            if (filterFavoriteMenu.isSelected()) {
+                filterFavorites();
+            } else {
+                loadMemos();
+            }
+        });
+
+        pinMenu.setOnAction(e -> {
+            if (currentMemo == null) return;
+            currentMemo.setPinned(pinMenu.isSelected());
+            saveCurrentMemo();
+            loadMemos();
+        });
+
+        favoriteMenu.setOnAction(e -> {
+            if (currentMemo == null) return;
+            currentMemo.setFavorite(favoriteMenu.isSelected());
+            saveCurrentMemo();
+            loadMemos();
+        });
+
+        addCategoryMenu.setOnAction(e -> addCategory());
+    }
+
+    /**
+     * カテゴリComboBoxの設定
+     */
+    private void setupCategoryComboBox() {
+        addCategoryBtn.setOnAction(e -> addCategory());
+
+        categoryComboBox.getSelectionModel().selectedItemProperty().addListener(
+            (obs, oldVal, newVal) -> {
+                if (newVal == null) {
+                    loadMemos();
+                } else {
+                    filterByCategory(newVal.getId());
+                }
+            }
+        );
+    }
+
+    /**
+     * ダークモードの初期設定
+     */
+    private void setupDarkMode() {
         boolean isDark = "true".equals(java.util.prefs.Preferences
             .userNodeForPackage(MainController.class)
             .get("darkMode", "false"));
         if (isDark) {
-            darkModeBtn.setSelected(true);
-            darkModeBtn.setText("☀ ライトモード");
-            Platform.runLater(() -> darkModeBtn.getScene().getRoot().getStyleClass().add("dark"));
+            darkModeMenu.setSelected(true);
+            Platform.runLater(() -> toggleDarkMode(true));
         }
+    }
 
-        // メモ一覧のセルの表示を調整
-        memoListView.setCellFactory(list -> new ListCell<>() {
-            @Override
-            protected void updateItem(Memo memo, boolean empty) {
-                super.updateItem(memo, empty);
-                if (empty || memo == null) {
-                    setText(null);
-                } else {
-                    setText(memo.getTitle().isEmpty() ? " (タイトルなし) " : memo.getTitle());
+    /**
+     * WebViewブリッジの設定
+     */
+    private void setupWebViewBridge() {
+        previewView.getEngine().getLoadWorker().stateProperty().addListener(
+            (obs, oldState, newState) -> {
+                if (newState == Worker.State.SUCCEEDED) {
+                    netscape.javascript.JSObject window =
+                        (netscape.javascript.JSObject) previewView.getEngine().executeScript("window");
+                    window.setMember("javabridge", javaBridge);
                 }
             }
-        });
-        // メモ一覧の右クリックメニュー
-        ContextMenu contextMenu = new ContextMenu();
-        MenuItem deleteItem = new MenuItem("削除");
-        deleteItem.setOnAction(e -> deleteCurrentMemo());
-        contextMenu.getItems().add(deleteItem);
-        memoListView.setContextMenu(contextMenu);
-
-        // SplitPaneの分割位置を指定
-        Platform.runLater(() -> splitPane.setDividerPositions(0.2, 0.6));
-
-        // JavaブリッジをWebViewに登録する
-        previewView.getEngine().getLoadWorker().stateProperty().addListener(
-                (obs, oldState, newState) -> {
-                    if (newState == Worker.State.SUCCEEDED) {
-                        netscape.javascript.JSObject window =
-                                (netscape.javascript.JSObject) previewView.getEngine().executeScript("window");
-                        window.setMember("javabridge", javaBridge);
-                    }
-                }
         );
     }
+
+    /* -----------------
+        メモ操作メソッド
+     ----------------- */
 
     /**
      * メモ一覧の読み込み
@@ -265,6 +281,21 @@ public class MainController implements Initializable {
             memo.setId(id);
             memoListView.getItems().add(0, memo);
             memoListView.getSelectionModel().select(memo);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 現在のメモを保存する
+     */
+    private void saveCurrentMemo() {
+        if (currentMemo == null || isLoading) return;
+        try {
+            currentMemo.setTitle(titleField.getText());
+            currentMemo.setContent(editorArea.getText());
+            memoDao.update(currentMemo);
+            memoListView.refresh();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -300,31 +331,6 @@ public class MainController implements Initializable {
     }
 
     /**
-     * 現在のメモを保存する
-     */
-    private void saveCurrentMemo() {
-        if (currentMemo == null || isLoading) return;
-        try {
-            currentMemo.setTitle(titleField.getText());
-            currentMemo.setContent(editorArea.getText());
-            memoDao.update(currentMemo);
-            memoListView.refresh();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * プレビューの更新
-     */
-    private void updatePreview(String markdown) {
-        if (markdown == null) markdown = "";
-        boolean isDark = darkModeBtn != null && darkModeBtn.isSelected();
-        String html = MarkdownRenderer.render(markdown, isDark);
-        previewView.getEngine().loadContent(html, "text/html");
-    }
-
-    /**
      * メモを検索
      */
     private void searchMemos() {
@@ -340,6 +346,26 @@ public class MainController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    /**
+     * お気に入りメモのみに絞り込む
+     */
+    private void filterFavorites() {
+        try {
+            List<Memo> allMemos = memoDao.findAll();
+            List<Memo> favorites = allMemos.stream()
+                .filter(Memo::isFavorite)
+                .toList();
+            memoListView.getItems().setAll(favorites);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /* -----------------
+        画像操作メソッド
+     ----------------- */
 
     /**
      * ファイルから画像を挿入
@@ -361,11 +387,6 @@ public class MainController implements Initializable {
             String markdownImage = "\n![" + file.getName() + "](file:///" + savePath.replace("\\", "/") + ")\n";
             editorArea.insertText(editorArea.getCaretPosition(), markdownImage);
 
-            // DBに画像を登録
-            try (var stmt = DatabaseManager.getInstance().getConnection().createStatement();
-                 var rs = stmt.executeQuery("PRAGMA foreign_keys")) {
-                if (rs.next()) System.out.println("本番foreign_keys: " + rs.getInt(1));
-            }
             dev.ritterackr.bitterlog.model.Image image =
                 new dev.ritterackr.bitterlog.model.Image(currentMemo.getId(), file.getName(), savePath);
             imageDao.create(image);
@@ -400,6 +421,10 @@ public class MainController implements Initializable {
         }
     }
 
+    /* -----------------
+        Export・Import
+     ----------------- */
+
     /**
      * データをZIPファイルにエクスポート
      */
@@ -411,23 +436,15 @@ public class MainController implements Initializable {
         );
         fileChooser.setInitialFileName("bitterlog_export.zip");
 
-        File file = fileChooser.showSaveDialog(exportBtn.getScene().getWindow());
+        File file = fileChooser.showSaveDialog(newMemoBtn.getScene().getWindow());
         if (file == null) return;
 
         try {
             ExportImportManager.export(file.getAbsolutePath());
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("エクスポート完了");
-            alert.setHeaderText(null);
-            alert.setContentText("エクスポートが完了しました");
-            alert.showAndWait();
+            showInfo("エクスポート完了", "エクスポートが完了しました");
         } catch (Exception e) {
             e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("エクスポートエラー");
-            alert.setHeaderText(null);
-            alert.setContentText("エクスポートに失敗しました");
-            alert.showAndWait();
+            showError("エクスポートエラー", "エクスポートに失敗しました");
         }
     }
 
@@ -441,63 +458,22 @@ public class MainController implements Initializable {
             new FileChooser.ExtensionFilter("ZIPファイル", "*.zip")
         );
 
-        File file = fileChooser.showOpenDialog(importBtn.getScene().getWindow());
+        File file = fileChooser.showOpenDialog(newMemoBtn.getScene().getWindow());
         if (file == null) return;
 
         try {
             ExportImportManager.importData(file.getAbsolutePath());
             loadMemos();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("インポート完了");
-            alert.setHeaderText(null);
-            alert.setContentText("インポートが完了しました");
-            alert.showAndWait();
+            showInfo("インポート完了", "インポートが完了しました");
         } catch (Exception e) {
             e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("インポートエラー");
-            alert.setHeaderText(null);
-            alert.setContentText("インポートに失敗しました");
-            alert.showAndWait();
+            showError("インポートエラー", "インポートに失敗しました");
         }
     }
 
-    /**
-     * お気に入りメモのみに絞り込む
-     */
-    private void filterFavorites() {
-        try {
-            List<Memo> allMemos = memoDao.findAll();
-            List<Memo> favorites = allMemos.stream()
-                .filter(Memo::isFavorite)
-                .toList();
-            memoListView.getItems().setAll(favorites);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * ダークモードとライトモードの切り替え
-     */
-    private void toggleDarkMode() {
-        var root = darkModeBtn.getScene().getRoot();
-        boolean isDark = darkModeBtn.isSelected();
-
-        if (isDark) {
-            root.getStyleClass().add("dark");
-            darkModeBtn.setText("☀ ライトモード");
-        } else {
-            root.getStyleClass().remove("dark");
-            darkModeBtn.setText("\uD83C\uDF19 ダークモード");
-        }
-
-        updatePreview(editorArea.getText());
-
-        // 設定を保存
-        java.util.prefs.Preferences.userNodeForPackage(MainController.class)
-            .put("darkMode", String.valueOf(isDark));
-    }
+    /* --------------------
+        カテゴリ操作メソッド
+     -------------------- */
 
     /**
      * カテゴリ一覧を読み込む<br>
@@ -566,6 +542,84 @@ public class MainController implements Initializable {
         });
     }
 
+    /**
+     * メモのカテゴリComboBoxを更新する
+     */
+    private void updateMemoCategoryComboBox(Memo memo) {
+        memoCategoryComboBox.getItems().clear();
+        memoCategoryComboBox.getItems().add(null);
+        try {
+            memoCategoryComboBox.getItems().addAll(categoryDao.findAll());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (memo.getCategoryId() > 0) {
+            memoCategoryComboBox.getItems().stream()
+                .filter(c -> c != null && c.getId() == memo.getCategoryId())
+                .findFirst()
+                .ifPresent(memoCategoryComboBox.getSelectionModel()::select);
+        } else {
+            memoCategoryComboBox.getSelectionModel().select(null);
+        }
+    }
+
+
+    /* -----------------
+       表示操作メソッド
+     ----------------- */
+
+    /**
+     * プレビューの更新
+     */
+    private void updatePreview(String markdown) {
+        if (markdown == null) markdown = "";
+        boolean isDark = darkModeMenu != null && darkModeMenu.isSelected();
+        String html = MarkdownRenderer.render(markdown, isDark);
+        previewView.getEngine().loadContent(html, "text/html");
+    }
+
+    /**
+     * ダークモードとライトモードの切り替え
+     */
+    private void toggleDarkMode(boolean isDark) {
+        var root = previewView.getScene().getRoot();
+        if (isDark) {
+            root.getStyleClass().add("dark");
+        } else {
+            root.getStyleClass().remove("dark");
+        }
+        darkModeMenu.setSelected(isDark);
+        updatePreview(editorArea.getText());
+        // 設定を保存
+        java.util.prefs.Preferences.userNodeForPackage(MainController.class)
+                .put("darkMode", String.valueOf(isDark));
+    }
+
+    /* ---------------------
+       ユーティリティメソッド
+     --------------------- */
+
+    /**
+     * 情報ダイアログの表示
+     */
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    /**
+     * エラーダイアログの表示
+     */
+    private void showError(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
     /**
      * WebView と Java を繋ぐブリッジクラス

@@ -11,23 +11,38 @@
 
     <!-- 上部ツールバー -->
     <top>
-        <ToolBar>
-            <Button fx:id="newMemoBtn" text="新規メモ"/>
-            <Separator/>
-            <Button fx:id="insertImageBtn" text="画像挿入"/>
-            <Separator/>
-            <TextField fx:id="searchField" promptText="検索..." prefWidth="200"/>
-            <Button fx:id="searchBtn" text="検索"/>
-            <Separator/>
-            <Button fx:id="exportBtn" text="エクスポート"/>
-            <Button fx:id="importBtn" text="インポート"/>
-            <Separator/>
-            <ToggleButton fx:id="pinBtn" text="📌 ピン留め"/>
-            <ToggleButton fx:id="favoriteBtn" text="⭐ お気に入り"/>
-            <ToggleButton fx:id="filterFavoriteBtn" text="⭐ お気に入りのみ"/>
-            <Separator/>
-            <ToggleButton fx:id="darkModeBtn" text="🌙 ダークモード"/>
-        </ToolBar>
+        <VBox>
+            <!-- メニューバー -->
+            <MenuBar>
+                <Menu text="ファイル">
+                    <MenuItem fx:id="newMemoMenu" text="新規メモ"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem fx:id="exportMenu" text="エクスポート"/>
+                    <MenuItem fx:id="importMenu" text="インポート"/>
+                </Menu>
+                <Menu text="表示">
+                    <CheckMenuItem fx:id="darkModeMenu" text="ダークモード"/>
+                    <CheckMenuItem fx:id="filterFavoriteMenu" text="お気に入りのみ表示"/>
+                </Menu>
+                <Menu text="メモ">
+                    <CheckMenuItem fx:id="pinMenu" text="ピン留め"/>
+                    <CheckMenuItem fx:id="favoriteMenu" text="お気に入り"/>
+                </Menu>
+                <Menu text="カテゴリ">
+                    <MenuItem fx:id="addCategoryMenu" text="カテゴリ追加"/>
+                </Menu>
+            </MenuBar>
+
+            <!-- ツールバー -->
+            <ToolBar>
+                <Button fx:id="newMemoBtn" text="新規メモ"/>
+                <Separator/>
+                <TextField fx:id="searchField" promptText="検索..." prefWidth="200"/>
+                <Button fx:id="searchBtn" text="検索"/>
+                <Separator/>
+                <Button fx:id="insertImageBtn" text="画像挿入"/>
+            </ToolBar>
+        </VBox>
     </top>
 
     <!-- メインコンテンツ -->
