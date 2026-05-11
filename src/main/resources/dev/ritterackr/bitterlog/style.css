@@ -213,16 +213,74 @@
 /* --------------
     ダイアログ
  -------------- */
-.dialog-pane {
+.dialog-root {
+    -fx-background-color: #fdf6ec;
+    -fx-border-color: #d4b896;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 4);
+}
+
+.dialog-title {
+    -fx-background-color: #2c1810;
+    -fx-text-fill: #f0e6d3;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 16px;
+}
+
+.dialog-content {
     -fx-background-color: #fdf6ec;
 }
 
-.dialog-pane .header-panel {
-    -fx-background-color: #2c1810;
+.dialog-message {
+    -fx-text-fill: #2c1810;
+    -fx-font-size: 13px;
 }
 
-.dialog-pane .header-panel .label {
-    -fx-text-fill: #f0e6d3;
+.dialog-message-error {
+    -fx-text-fill: #8b2020;
+    -fx-font-size: 13px;
+}
+
+.dialog-input {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #2c1810;
+    -fx-border-color: #d4b896;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 5px 8px;
+}
+
+.dialog-input:focused {
+    -fx-border-color: #c47c2b;
+}
+
+.dialog-btn-primary {
+    -fx-background-color: #8b5e3c;
+    -fx-text-fill: #fdf6ec;
+    -fx-background-radius: 4px;
+    -fx-padding: 6px 20px;
+    -fx-cursor: hand;
+}
+
+.dialog-btn-primary:hover {
+    -fx-background-color: #c47c2b;
+}
+
+.dialog-btn-secondary {
+    -fx-background-color: transparent;
+    -fx-text-fill: #8b5e3c;
+    -fx-border-color: #8b5e3c;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 6px 20px;
+    -fx-cursor: hand;
+}
+
+.dialog-btn-secondary:hover {
+    -fx-background-color: #f5e6d3;
 }
 
 /* --------------
@@ -338,6 +396,47 @@
 
 .dark .scroll-bar .thumb:hover {
     -fx-background-color: #c47c2b;
+}
+
+.dark .dialog-root {
+    -fx-background-color: #1e1008;
+    -fx-border-color: #3d2510;
+}
+
+.dark .dialog-content {
+    -fx-background-color: #1e1008;
+}
+
+.dark .dialog-message {
+    -fx-text-fill: #f0e6d3;
+}
+
+.dark .dialog-input {
+    -fx-background-color: #2a1a0e;
+    -fx-text-fill: #f0e6d3;
+    -fx-border-color: #3d2510;
+}
+
+.dark .dialog-btn-primary {
+    -fx-background-color: #c47c2b;
+    -fx-text-fill: #ffffff;
+}
+
+.dark .dialog-btn-primary:hover {
+    -fx-background-color: #e09040;
+}
+
+.dark .dialog-btn-secondary {
+    -fx-background-color: transparent;
+    -fx-text-fill: #c47c2b;
+    -fx-border-color: #c47c2b;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.dark .dialog-btn-secondary:hover {
+    -fx-background-color: #2a1a0e;
 }
 
 /* ---------------------
