@@ -218,6 +218,16 @@ public class MainController implements Initializable {
                 pasteImageFromClipboard();
             }
         });
+        editorArea.estimatedScrollYProperty().addListener((obs, oldVal, newVal) -> {
+            double totalHeight = editorArea.totalHeightEstimateProperty().getValue();
+            double visibleHeight = editorArea.getHeight();
+            double scrollableHeight = totalHeight - visibleHeight;
+            double scrollRatio = scrollableHeight > 0 ? newVal.doubleValue() / scrollableHeight : 0;
+            previewView.getEngine().executeScript(
+                    "var scrollableHeight = document.body.scrollHeight - window.innerHeight;" +
+                            "window.scrollTo(0, scrollableHeight * " + scrollRatio + ");"
+            );
+        });
 
         // メモカテゴリComboBoxの設定
         memoCategoryComboBox.setCellFactory(list -> new ListCell<>() {
