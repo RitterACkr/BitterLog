@@ -1,6 +1,8 @@
 package dev.ritterackr.bitterlog.database;
 
 import org.flywaydb.core.Flyway;
+
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -15,16 +17,15 @@ public class DatabaseManager {
 
     /** DBファイルを保存するディレクトリ */
     private static final String DB_DIR =
-        System.getProperty("bitterlog.db.dir",
-            System.getProperty("user.home") + "/BitterLog");
+        System.getProperty("bitterlog.db.dir", getAppDir());
 
     /** DBファイルのパス */
     private static final String DB_PATH =
         System.getProperty("bitterlog.db.path",
-            DB_DIR + "/bitterlog.db");
+            DB_DIR + File.separator + "bitterlog.db");
 
     /** JDBC接続URL */
-    private static final String DB_URL = "jdbc:sqlite:" + DB_PATH;
+    private static final String DB_URL = "jdbc:sqlite:" + DB_PATH.replace("\\", "/");
 
     /** シングルトンインスタンス */
     private static DatabaseManager instance;
@@ -68,7 +69,7 @@ public class DatabaseManager {
     private void runMigrations() {
         Flyway flyway = Flyway.configure()
                 .dataSource(DB_URL, null, null)
-                .locations("classpath:db/migration")
+                .locations("classpath:db/migration", "filesystem:app/db/migration")
                 .load();
         flyway.migrate();
     }
@@ -102,5 +103,18 @@ public class DatabaseManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * DBパスの取得
+     */
+    private static String getAppDir() {
+        String appPath = System.getProperty("jpackage.app-path");
+        if (appPath != null) {
+            File exeFile = new File(appPath);
+            File appFolder = exeFile.getParentFile();
+            return appFolder.getAbsolutePath() + File.separator + "data";
+        }
+        return System.getProperty("user.home") + File.separator + "BitterLog";
     }
 }

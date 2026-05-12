@@ -21,7 +21,7 @@ import java.util.UUID;
 public class ImageManager {
 
     /** 画像保存ディレクトリ */
-    private static final String IMAGE_DIR = System.getProperty("user.home") + "/BitterLog/images/";
+    private static final String IMAGE_DIR = getImageDirPath() + File.separator;
 
     /** 画像の最大幅・高さ (px) */
     private static final int MAX_SIZE = 1280;
@@ -168,5 +168,18 @@ public class ImageManager {
      */
     public static String getImageDir() {
         return IMAGE_DIR;
+    }
+
+    /**
+     * 画像保存ディレクトリのパスを取得
+     */
+    private static String getImageDirPath() {
+        String appPath = System.getProperty("jpackage.app-path");
+        if (appPath != null) {
+            File exeFile = new File(appPath);
+            File appFolder = exeFile.getParentFile();
+            return appFolder.getAbsolutePath() + File.separator + "data" + File.separator + "images";
+        }
+        return System.getProperty("user.home") + File.separator + "BitterLog" + File.separator + "images";
     }
 }

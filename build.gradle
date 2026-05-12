@@ -57,9 +57,20 @@ jlink {
     launcher {
         name = 'BitterLog'
     }
+    addExtraDependencies('javafx')
     jpackage {
         imageName = 'BitterLog'
         installerType = 'app-image'
+    }
+
+    // jpackageImage完了後にリソースをコピーする
+    tasks.named('jpackageImage').configure {
+        doLast {
+            copy {
+                from 'build/resources/main/db'
+                into 'build/jpackage/BitterLog/app/db'
+            }
+        }
     }
 }
 
