@@ -1,5 +1,6 @@
 package dev.ritterackr.bitterlog.controller;
 
+import com.sun.tools.javac.Main;
 import dev.ritterackr.bitterlog.dao.CategoryDao;
 import dev.ritterackr.bitterlog.dao.ImageDao;
 import dev.ritterackr.bitterlog.dao.MemoDao;
@@ -79,7 +80,7 @@ public class MainController implements Initializable {
     // State
     private Memo currentMemo;
     private boolean isLoading = false;
-    private final JavaBridge javaBridge = new JavaBridge();
+    private final JavaBridge javaBridge = new JavaBridge(this);
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -175,6 +176,30 @@ public class MainController implements Initializable {
             clearTagFilterBtn.setDisable(true);
             loadMemos();
         });
+
+        // 削除
+        ContextMenu tagContextMenu = new ContextMenu();
+        MenuItem deleteTagItem = new MenuItem("タグを削除");
+        deleteTagItem.setOnAction(e -> {
+            Tag selected = tagListView.getSelectionModel().getSelectedItem();
+            if (selected == null) return;
+
+            boolean confirmed = DialogHelper.showConfirm(
+                tagListView.getScene().getWindow(), "タグ削除", "「" + selected.getName() + "」を削除しますか？"
+            );
+
+            if (confirmed) {
+                try {
+                    tagDao.delete(selected.getId());
+                    loadTagList();
+                    loadMemos();
+                } catch (SQLException e2) {
+                    e2.printStackTrace();
+                }
+            }
+        });
+        tagContextMenu.getItems().add(deleteTagItem);
+        tagListView.setContextMenu(tagContextMenu);
     }
 
     /**
@@ -807,9 +832,57 @@ public class MainController implements Initializable {
     }
 
     /**
+     * 指定したタイトルのメモに移動
+     * @param title メモタイトル
+     * @param line 移動先の行番号
+     */
+    public void navigateToMemo(String title, String line) {
+        try {
+            List<Memo> memos = memoDao.findAll();
+            memos.stream()
+                    .filter(m -> m.getTitle().equals(title))
+                    .findFirst()
+                    .ifPresent(memo -> {
+                        // リストビューの中から同じIDのメモを探して選択する
+                        memoListView.getItems().stream()
+                                .filter(item -> item.getId() == memo.getId())
+                                .findFirst()
+                                .ifPresent(item -> {
+                                    memoListView.getSelectionModel().select(item);
+                                    memoListView.scrollTo(item);
+                                });
+
+                        if (line != null && !line.isEmpty()) {
+                            // 指定行にスクロールする
+                            int lineNum = Integer.parseInt(line) - 1;
+                            String content = editorArea.getText();
+                            String[] lines = content.split("\n");
+                            if (lineNum >= 0 && lineNum < lines.length) {
+                                int pos = 0;
+                                for (int i = 0; i < lineNum; i++) {
+                                    pos += lines[i].length() + 1;
+                                }
+                                editorArea.moveTo(pos);
+                                editorArea.requestFollowCaret();
+                            }
+                        }
+                    });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * WebView と Java を繋ぐブリッジクラス
      */
     public static class JavaBridge {
+
+        private MainController controller;
+
+        public JavaBridge(MainController controller) {
+            this.controller = controller;
+        }
+
         /**
          * テキストをクリップボードにコピーする
          * @param text コピーするテキスト
@@ -819,6 +892,13 @@ public class MainController implements Initializable {
             javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
             content.putString(text);
             clipboard.setContent(content);
+        }
+
+        /**
+         * メモリンクがクリックされたときに呼ばれる
+         */
+        public void openMemoLink(String title, String line) {
+            javafx.application.Platform.runLater(() -> controller.navigateToMemo(title, line));
         }
     }
 }
