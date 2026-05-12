@@ -43,8 +43,15 @@ public class TagDao {
      * @throws SQLException DB操作失敗時のスタックトレース
      */
     public void delete(int id) throws SQLException {
-        String sql = "DELETE FROM tags WHERE id = ?";
         Connection conn = DatabaseManager.getInstance().getConnection();
+
+        String deleteMemoTagsSql = "DELETE FROM memo_tags WHERE tag_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(deleteMemoTagsSql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+
+        String sql = "DELETE FROM tags WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();

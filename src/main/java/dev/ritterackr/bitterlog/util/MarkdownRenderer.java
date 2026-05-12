@@ -40,6 +40,7 @@ public class MarkdownRenderer {
      */
     public static String render(String markdown, boolean isDark) {
         markdown = convertLocalImagesToBase64(markdown);
+        markdown = convertMemoLinks(markdown);
         Node document = parser.parse(markdown);
         String body = renderer.render(document);
         return wrapWithTemplate(body, isDark);
@@ -79,6 +80,28 @@ public class MarkdownRenderer {
             } catch (Exception e) {
                 matcher.appendReplacement(sb, matcher.group(0));
             }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
+    /**
+     * [[メモタイトル]] / [[メモタイトル#行番号]]
+     */
+    private static String convertMemoLinks(String markdown) {
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+            "\\[\\[([^\\]#]+)(?:#(\\d+))?\\]\\]"
+        );
+        java.util.regex.Matcher matcher = pattern.matcher(markdown);
+        StringBuffer sb = new StringBuffer();
+
+        while (matcher.find()) {
+            String title = matcher.group(1).trim();
+            String line = matcher.group(2);
+            String linkText = line != null ? title + " #" + line : title;
+            String href = "memo://" + title + (line != null ? "#" + line : "");
+            String replacement = "[" + linkText + "](" + href + ")";
+            matcher.appendReplacement(sb, java.util.regex.Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(sb);
         return sb.toString();
@@ -178,6 +201,18 @@ public class MarkdownRenderer {
                                 }, 2000);
                             });
                         });
+                    });
+                    
+                    document.addEventListener('click', function(e) {
+                        var target = e.target;
+                        if (target.tagName === 'A' && target.href.startsWith('memo://')) {
+                            e.preventDefault();
+                            var href = target.href.replace('memo://', '');
+                            var parts = href.split('#');
+                            var title = decodeURIComponent(parts[0]);
+                            var line = parts.length > 1 ? parts[1] : '';
+                            javabridge.openMemoLink(title, line);
+                        }
                     });
                 </script>
             </head>

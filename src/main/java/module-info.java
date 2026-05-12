@@ -18,6 +18,7 @@ module dev.ritterackr.bitterlog {
     requires flexmark.util.data;
     requires flexmark.ext.tables;
     requires flexmark.ext.gfm.strikethrough;
+    requires jdk.compiler;
 
     opens dev.ritterackr.bitterlog to javafx.fxml;
     opens dev.ritterackr.bitterlog.controller to javafx.fxml;
