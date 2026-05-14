@@ -82,6 +82,9 @@ public class MainController implements Initializable {
     private boolean isLoading = false;
     private final JavaBridge javaBridge = new JavaBridge(this);
 
+    private javafx.animation.PauseTransition previewDebounce =
+        new javafx.animation.PauseTransition(javafx.util.Duration.millis(300));
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         loadMemos();
@@ -211,7 +214,11 @@ public class MainController implements Initializable {
             saveCurrentMemo();
         });
 
-        titleField.textProperty().addListener((obs, oldVal, newVal) -> saveCurrentMemo());
+        titleField.textProperty().addListener((obs, oldVal, newVal) -> {
+            saveCurrentMemo();
+            previewDebounce.setOnFinished(e -> updatePreview(newVal));
+            previewDebounce.playFromStart();
+        });
 
         editorArea.setOnKeyPressed(event -> {
             if (event.isControlDown() && event.getCode() == javafx.scene.input.KeyCode.V) {
