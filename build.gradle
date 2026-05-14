@@ -60,6 +60,7 @@ jlink {
     jpackage {
         imageName = 'BitterLog'
         installerType = 'app-image'
+        icon = 'src/main/resources/dev/ritterackr/bitterlog/icon.ico'
     }
 }
 
