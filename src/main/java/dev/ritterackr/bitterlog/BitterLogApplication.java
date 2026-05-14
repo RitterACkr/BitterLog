@@ -18,6 +18,7 @@ public class BitterLogApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        stage.getIcons().add(new javafx.scene.image.Image(BitterLogApplication.class.getResourceAsStream("icon.png")));
         // WebViewでローカルファイルへのアクセスを許可する
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
         FXMLLoader fxmlLoader = new FXMLLoader(
