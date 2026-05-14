@@ -52,7 +52,7 @@
             <!-- 左側: メモ一覧 -->
             <VBox prefWidth="200">
                 <Label text="カテゴリ" styleClass="sidebar-section-label" style="-fx-padding: 6 8 2 8; -fx-font-weight: bold;"/>
-                <HBox spacing="4" style="-fx-padding: 0 4 4 4;" alignment="CENTER_LEFT">
+                <HBox spacing="4" style="-fx-padding: 4 4 4 4;" alignment="CENTER">
                     <ComboBox fx:id="categoryComboBox" promptText="すべて" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
                     <Button fx:id="addCategoryBtn" text="+" minWidth="35"/>
                     <Button fx:id="editCategoryBtn" text="✏" minWidth="40" disable="true"/>
@@ -61,9 +61,9 @@
 
                 <Separator/>
 
-                <HBox alignment="CENTER_LEFT" style="-fx-padding: 6 8 2 8;">
-                    <Label text="タグ" styleClass="sidebar-section-label" style="-fx-font-weight: bold;" HBox.hgrow="ALWAYS"/>
-                    <Button fx:id="clearTagFilterBtn" text="✕" minWidth="24" style="-fx-font-size: 10px;"/>
+                <HBox styleClass="sidebar-section-label" alignment="CENTER_LEFT">
+                    <Label styleClass="sidebar-section-label" text="タグ" style="-fx-font-weight: bold; -fx-padding: 0;" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button fx:id="clearTagFilterBtn" text="✕" minWidth="24" style="-fx-font-size: 10px; -fx-padding: 6px 10px"/>
                 </HBox>
                 <ListView fx:id="tagListView" prefHeight="120"/>
 
@@ -76,8 +76,8 @@
             <!-- 中央: Markdownエディタ -->
             <VBox fx:id="editorPane" prefWidth="510">
                 <TextField fx:id="titleField" promptText="タイトル"/>
-                <HBox spacing="4" style="-fx-padding: 4 0 4 0;">
-                    <Label text="カテゴリ"/>
+                <HBox spacing="4" style="-fx-padding: 4 4 4 4;">
+                    <Label text="カテゴリ" style="-fx-padding: 0 4 0 0;"/>
                     <ComboBox fx:id="memoCategoryComboBox" promptText="カテゴリを選択" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
                 </HBox>
                 <HBox spacing="4" style="-fx-padding: 0 0 4 0;">
