@@ -124,7 +124,6 @@ public class MarkdownRenderer {
                 <link rel="stylesheet"
                     href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-                <script>hljs.highlightAll();</script>
                 <style>
                     body {
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -133,8 +132,14 @@ public class MarkdownRenderer {
                         padding: 16px;
                         color: #24292e;
                     }
+                    body.dark pre {
+                        background-color: #2d2d2d !important;
+                    }
+                    body.dark .hljs {
+                        background-color: #2d2d2d !important;
+                    }
                     pre {
-                        background-color: #f6f8fa;
+                        background-color: #f6f8fa !important;
                         border-radius: 6px;
                         padding: 12px;
                         overflow-x: auto;
@@ -178,6 +183,8 @@ public class MarkdownRenderer {
                 </style>
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
+                        hljs.highlightAll();
+                    
                         document.querySelectorAll('pre code').forEach(function(block) {
                             // コピーボタン
                             var button = document.createElement('button');
