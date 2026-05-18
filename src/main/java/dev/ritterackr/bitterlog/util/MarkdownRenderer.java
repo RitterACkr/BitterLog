@@ -145,12 +145,15 @@ public class MarkdownRenderer {
                 "</script>\n<style>\n" +
                 """
                         body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                            font-size: 14px;
-                            line-height: 1.6;
-                            padding: 16px;
-                            color: #24292e;
-                        }
+                                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                                    font-size: 14px;
+                                    line-height: 1.6;
+                                    padding: 16px;
+                                    color: #24292e;
+                                    -webkit-font-smoothing: antialiased;
+                                    text-rendering: optimizeLegibility;
+                                    font-weight: 400;
+                                }
                         pre {
                             background-color: #f6f8fa !important;
                             border-radius: 6px;
