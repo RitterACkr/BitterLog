@@ -131,110 +131,100 @@ public class MarkdownRenderer {
      * @return 完全なHTML文字列
      */
     private static String wrapWithTemplate(String body, boolean isDark) {
-        System.out.println("HIGHLIGHT_JS length: " + HIGHLIGHT_JS.length());
-        System.out.println("HIGHLIGHT_CSS length: " + HIGHLIGHT_CSS.length());
         String bodyClass = isDark ? " class=\"dark\"" : "";
-        return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-            <style>
-                body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                    font-size: 14px;
-                    line-height: 1.6;
-                    padding: 16px;
-                    color: #24292e;
-                }
-                pre {
-                    background-color: #f6f8fa !important;
-                    border-radius: 6px;
-                    padding: 12px;
-                    overflow-x: auto;
-                }
-                code {
-                    font-family: 'Consolas', 'Monaco', monospace;
-                    font-size: 13px;
-                }
-                table {
-                    border-collapse: collapse;
-                    width: 100%;
-                }
-                th, td {
-                    border: 1px solid #dfe2e5;
-                    padding: 6px 12px;
-                }
-                th {
-                    background-color: #f6f8fa;
-                }
-                body.dark {
-                    background-color: #1e1e1e;
-                    color: #ffffff;
-                }
-                body.dark pre {
-                    background-color: #2d2d2d !important;
-                }
-                body.dark .hljs {
-                    background-color: #2d2d2d !important;
-                }
-                body.dark code {
-                    color: #e8d5c0;
-                }
-                body.dark pre {
-                    background-color: #2d2d2d !important;
-                    color: #e8d5c0;
-                }
-                body.dark table {
-                    color: #ffffff;
-                }
-                body.dark th {
-                    background-color: #2d2d2d;
-                }
-                body.dark th, body.dark td {
-                    border-color: #3d3d3d;
-                }
-            </style>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    hljs.highlightAll();
-                    document.querySelectorAll('pre code').forEach(function(block) {
-                        var button = document.createElement('button');
-                        button.textContent = 'Copy';
-                        button.style.cssText =
-                            'position: absolute; top: 8px; right: 8px; padding: 2px 8px; ' +
-                            'font-size: 12px; cursor: pointer; border: 1px solid #ccc; ' +
-                            'border-radius: 4px; background: #fff;';
-                        var pre = block.parentNode;
-                        pre.style.position = 'relative';
-                        pre.appendChild(button);
-                        button.addEventListener('click', function() {
-                            javabridge.copyToClipboard(block.textContent);
-                            button.textContent = 'Copied!';
-                            setTimeout(function() {
+        return ("<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<style>" +
+                HIGHLIGHT_CSS +
+                "</style>\n<script>" +
+                HIGHLIGHT_JS +
+                "</script>\n<style>\n" +
+                """
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                            font-size: 14px;
+                            line-height: 1.6;
+                            padding: 16px;
+                            color: #24292e;
+                        }
+                        pre {
+                            background-color: #f6f8fa !important;
+                            border-radius: 6px;
+                            padding: 12px;
+                            overflow-x: auto;
+                        }
+                        code {
+                            font-family: 'Consolas', 'Monaco', monospace;
+                            font-size: 13px;
+                        }
+                        table {
+                            border-collapse: collapse;
+                            width: 100%;
+                        }
+                        th, td {
+                            border: 1px solid #dfe2e5;
+                            padding: 6px 12px;
+                        }
+                        th {
+                            background-color: #f6f8fa;
+                        }
+                        body.dark {
+                            background-color: #1e1e1e;
+                            color: #ffffff;
+                        }
+                        body.dark pre {
+                            background-color: #2d2d2d !important;
+                            color: #e8d5c0;
+                        }
+                        body.dark .hljs {
+                            background-color: #2d2d2d !important;
+                        }
+                        body.dark code {
+                            color: #e8d5c0;
+                        }
+                        body.dark table {
+                            color: #ffffff;
+                        }
+                        body.dark th {
+                            background-color: #2d2d2d;
+                        }
+                        body.dark th, body.dark td {
+                            border-color: #3d3d3d;
+                        }
+                    </style>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            hljs.highlightAll();
+                            document.querySelectorAll('pre code').forEach(function(block) {
+                                var button = document.createElement('button');
                                 button.textContent = 'Copy';
-                            }, 2000);
+                                button.style.cssText =
+                                    'position: absolute; top: 8px; right: 8px; padding: 2px 8px; ' +
+                                    'font-size: 12px; cursor: pointer; border: 1px solid #ccc; ' +
+                                    'border-radius: 4px; background: #fff;';
+                                var pre = block.parentNode;
+                                pre.style.position = 'relative';
+                                pre.appendChild(button);
+                                button.addEventListener('click', function() {
+                                    javabridge.copyToClipboard(block.textContent);
+                                    button.textContent = 'Copied!';
+                                    setTimeout(function() {
+                                        button.textContent = 'Copy';
+                                    }, 2000);
+                                });
+                            });
                         });
-                    });
-                });
-                document.addEventListener('click', function(e) {
-                    var target = e.target;
-                    if (target.tagName === 'A' && target.href.startsWith('memo://')) {
-                        e.preventDefault();
-                        var href = target.href.replace('memo://', '');
-                        var parts = href.split('#');
-                        var title = decodeURIComponent(parts[0]);
-                        var line = parts.length > 1 ? parts[1] : '';
-                        javabridge.openMemoLink(title, line);
-                    }
-                });
-            </script>
-        </head>
-        <body""" + bodyClass + ">\n" + body + """
-        </body>
-        </html>
-        """;
+                        document.addEventListener('click', function(e) {
+                            var target = e.target;
+                            if (target.tagName === 'A' && target.href.startsWith('memo://')) {
+                                e.preventDefault();
+                                var href = target.href.replace('memo://', '');
+                                var parts = href.split('#');
+                                var title = decodeURIComponent(parts[0]);
+                                var line = parts.length > 1 ? parts[1] : '';
+                                javabridge.openMemoLink(title, line);
+                            }
+                        });
+                    </script>
+                </head>
+                <body""") + bodyClass + ">\n" + body + "</body>\n</html>";
     }
 }
