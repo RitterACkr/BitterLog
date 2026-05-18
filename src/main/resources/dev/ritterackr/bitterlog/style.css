@@ -504,10 +504,6 @@
     -fx-background-color: #3d2a1e;
 }
 
-.dark .code-area .text {
-    -fx-fill: #e8d5c0;
-}
-
 .dark .code-area .caret {
     -fx-stroke: #e8d5c0;
 }

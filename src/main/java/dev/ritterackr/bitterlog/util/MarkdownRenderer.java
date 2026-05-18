@@ -180,6 +180,13 @@ public class MarkdownRenderer {
                 body.dark .hljs {
                     background-color: #2d2d2d !important;
                 }
+                body.dark code {
+                    color: #e8d5c0;
+                }
+                body.dark pre {
+                    background-color: #2d2d2d !important;
+                    color: #e8d5c0;
+                }
                 body.dark table {
                     color: #ffffff;
                 }

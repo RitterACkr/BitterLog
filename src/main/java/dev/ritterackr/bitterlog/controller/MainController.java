@@ -87,6 +87,7 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        previewDebounce.setOnFinished(e -> updatePreview(editorArea.getText()));
         loadMemos();
         loadCategories();
         setupMemoListView();
@@ -213,14 +214,15 @@ public class MainController implements Initializable {
      */
     private void setupEditor() {
         editorArea.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (darkModeMenu.isSelected() && editorArea.getLength() > 0) {
+                editorArea.setStyleClass(0, editorArea.getLength(), "dark-text");
+            }
             updatePreview(newVal);
             saveCurrentMemo();
         });
 
         titleField.textProperty().addListener((obs, oldVal, newVal) -> {
             saveCurrentMemo();
-            previewDebounce.setOnFinished(e -> updatePreview(newVal));
-            previewDebounce.playFromStart();
         });
 
         editorArea.setOnKeyPressed(event -> {
@@ -823,12 +825,13 @@ public class MainController implements Initializable {
         var root = previewView.getScene().getRoot();
         if (isDark) {
             root.getStyleClass().add("dark");
+            editorArea.setStyleClass(0, editorArea.getLength(), "dark-text");
         } else {
             root.getStyleClass().remove("dark");
+            root.getStyleClass().remove("dark-text");
         }
         darkModeMenu.setSelected(isDark);
         updatePreview(editorArea.getText());
-        // 設定を保存
         java.util.prefs.Preferences.userNodeForPackage(MainController.class)
                 .put("darkMode", String.valueOf(isDark));
     }
