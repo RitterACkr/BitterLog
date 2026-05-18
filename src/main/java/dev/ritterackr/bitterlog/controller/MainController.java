@@ -115,7 +115,10 @@ public class MainController implements Initializable {
                     currentMemo = newVal;
                     titleField.setText(newVal.getTitle());
                     editorArea.replaceText(newVal.getContent() != null ? newVal.getContent() : "");
-                    updatePreview(newVal.getContent());
+                    previewDebounce.stop();
+                    javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(javafx.util.Duration.millis(100));
+                    delay.setOnFinished(e -> updatePreview(newVal.getContent()));
+                    delay.play();
                     pinMenu.setSelected(newVal.isPinned());
                     favoriteMenu.setSelected(newVal.isFavorite());
                     updateMemoCategoryComboBox(newVal);
