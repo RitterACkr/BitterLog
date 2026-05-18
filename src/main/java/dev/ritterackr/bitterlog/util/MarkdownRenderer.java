@@ -116,16 +116,13 @@ public class MarkdownRenderer {
      */
     private static String wrapWithTemplate(String body, boolean isDark) {
         String bodyClass = isDark ? " class=\"dark\"" : "";
-        String hlCssUrl = MarkdownRenderer.class.getResource("github.min.css").toExternalForm();
-        String hlJsUrl = MarkdownRenderer.class.getResource("highlight.min.js").toExternalForm();
-
         return """
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
-            <link rel="stylesheet" href="%s">
-            <script src="%s"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
             <style>
                 body {
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -146,7 +143,7 @@ public class MarkdownRenderer {
                 }
                 table {
                     border-collapse: collapse;
-                    width: 100%%;
+                    width: 100%;
                 }
                 th, td {
                     border: 1px solid #dfe2e5;
@@ -178,7 +175,6 @@ public class MarkdownRenderer {
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     hljs.highlightAll();
-
                     document.querySelectorAll('pre code').forEach(function(block) {
                         var button = document.createElement('button');
                         button.textContent = 'Copy';
@@ -198,7 +194,6 @@ public class MarkdownRenderer {
                         });
                     });
                 });
-
                 document.addEventListener('click', function(e) {
                     var target = e.target;
                     if (target.tagName === 'A' && target.href.startsWith('memo://')) {
@@ -212,7 +207,7 @@ public class MarkdownRenderer {
                 });
             </script>
         </head>
-        <body""".formatted(hlCssUrl, hlJsUrl) + bodyClass + ">\n" + body + """
+        <body""" + bodyClass + ">\n" + body + """
         </body>
         </html>
         """;
