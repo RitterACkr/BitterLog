@@ -20,6 +20,7 @@ public class MarkdownRenderer {
 
     private static final String HIGHLIGHT_JS;
     private static final String HIGHLIGHT_CSS;
+    private static final String HIGHLIGHT_CSS_DARK;
 
     static {
         // テーブル・打ち消し線などの拡張機能を有効化
@@ -34,16 +35,20 @@ public class MarkdownRenderer {
 
         String hlJs = "";
         String hlCss = "";
+        String hlCssDark = "";
         try {
             var jsStream = MarkdownRenderer.class.getResourceAsStream("/dev/ritterackr/bitterlog/highlight.min.js");
             var cssStream = MarkdownRenderer.class.getResourceAsStream("/dev/ritterackr/bitterlog/github.min.css");
+            var cssDarkStream = MarkdownRenderer.class.getResourceAsStream("/dev/ritterackr/bitterlog/github-dark.min.css");
             if (jsStream != null) hlJs = new String(jsStream.readAllBytes());
             if (cssStream != null) hlCss = new String(cssStream.readAllBytes());
+            if (cssDarkStream != null) hlCssDark = new String(cssDarkStream.readAllBytes());
         } catch (Exception e) {
             e.printStackTrace();
         }
         HIGHLIGHT_JS = hlJs;
         HIGHLIGHT_CSS = hlCss;
+        HIGHLIGHT_CSS_DARK = hlCssDark;
     }
 
     /**
@@ -132,8 +137,9 @@ public class MarkdownRenderer {
      */
     private static String wrapWithTemplate(String body, boolean isDark) {
         String bodyClass = isDark ? " class=\"dark\"" : "";
+        String highlightCss = isDark ? HIGHLIGHT_CSS_DARK : HIGHLIGHT_CSS;
         return ("<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<style>" +
-                HIGHLIGHT_CSS +
+                highlightCss +
                 "</style>\n<script>" +
                 HIGHLIGHT_JS +
                 "</script>\n<style>\n" +
