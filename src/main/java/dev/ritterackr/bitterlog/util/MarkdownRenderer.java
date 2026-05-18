@@ -18,6 +18,9 @@ public class MarkdownRenderer {
     private static final Parser parser;
     private static final HtmlRenderer renderer;
 
+    private static final String HIGHLIGHT_JS;
+    private static final String HIGHLIGHT_CSS;
+
     static {
         // テーブル・打ち消し線などの拡張機能を有効化
         MutableDataSet options = new MutableDataSet();
@@ -28,6 +31,19 @@ public class MarkdownRenderer {
 
         parser = Parser.builder(options).build();
         renderer = HtmlRenderer.builder(options).build();
+
+        String hlJs = "";
+        String hlCss = "";
+        try {
+            var jsStream = MarkdownRenderer.class.getResourceAsStream("/dev/ritterackr/bitterlog/highlight.min.js");
+            var cssStream = MarkdownRenderer.class.getResourceAsStream("/dev/ritterackr/bitterlog/github.min.css");
+            if (jsStream != null) hlJs = new String(jsStream.readAllBytes());
+            if (cssStream != null) hlCss = new String(cssStream.readAllBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        HIGHLIGHT_JS = hlJs;
+        HIGHLIGHT_CSS = hlCss;
     }
 
     /**
@@ -115,6 +131,8 @@ public class MarkdownRenderer {
      * @return 完全なHTML文字列
      */
     private static String wrapWithTemplate(String body, boolean isDark) {
+        System.out.println("HIGHLIGHT_JS length: " + HIGHLIGHT_JS.length());
+        System.out.println("HIGHLIGHT_CSS length: " + HIGHLIGHT_CSS.length());
         String bodyClass = isDark ? " class=\"dark\"" : "";
         return """
         <!DOCTYPE html>
