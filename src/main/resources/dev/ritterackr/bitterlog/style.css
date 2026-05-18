@@ -519,3 +519,7 @@
 .dark .code-area .scroll-pane .viewport {
     -fx-background-color: #3d2a1e;
 }
+
+.dark .code-area .text {
+    -fx-fill: #e8d5c0;
+}
