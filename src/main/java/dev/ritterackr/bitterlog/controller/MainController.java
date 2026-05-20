@@ -83,11 +83,15 @@ public class MainController implements Initializable {
     private final JavaBridge javaBridge = new JavaBridge(this);
 
     private javafx.animation.PauseTransition previewDebounce =
-        new javafx.animation.PauseTransition(javafx.util.Duration.millis(300));
+        new javafx.animation.PauseTransition(javafx.util.Duration.millis(500));
+
+    private javafx.animation.PauseTransition saveDebounce =
+        new javafx.animation.PauseTransition(javafx.util.Duration.millis(500));
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         previewDebounce.setOnFinished(e -> updatePreview(editorArea.getText()));
+        saveDebounce.setOnFinished(e -> saveCurrentMemoNow());
         loadMemos();
         loadCategories();
         setupMemoListView();
@@ -420,15 +424,21 @@ public class MainController implements Initializable {
      */
     private void saveCurrentMemo() {
         if (currentMemo == null || isLoading) return;
+        currentMemo.setTitle(titleField.getText());
+        currentMemo.setContent(editorArea.getText());
+        saveDebounce.playFromStart();
+    }
+    private void saveCurrentMemoNow() {
+        if (currentMemo == null) return;
         try {
-            currentMemo.setTitle(titleField.getText());
-            currentMemo.setContent(editorArea.getText());
             memoDao.update(currentMemo);
             memoListView.refresh();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
+
 
     /**
      * 現在選択中のメモを削除する
