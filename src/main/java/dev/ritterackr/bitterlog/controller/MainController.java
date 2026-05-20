@@ -217,8 +217,8 @@ public class MainController implements Initializable {
             if (darkModeMenu.isSelected() && editorArea.getLength() > 0) {
                 editorArea.setStyleClass(0, editorArea.getLength(), "dark-text");
             }
-            updatePreview(newVal);
             saveCurrentMemo();
+            previewDebounce.playFromStart();
         });
 
         titleField.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -802,7 +802,22 @@ public class MainController implements Initializable {
         if (markdown == null) markdown = "";
         boolean isDark = darkModeMenu != null && darkModeMenu.isSelected();
         String html = MarkdownRenderer.render(markdown, isDark);
+
+        Object scrollY = previewView.getEngine().executeScript(
+            "typeof window !== 'undefined' ? window.scrollY : 0"
+        );
+
         previewView.getEngine().loadContent(html, "text/html");
+
+        previewView.getEngine().getLoadWorker().stateProperty().addListener(
+            (obs, oldState, newState) -> {
+                if (newState == Worker.State.SUCCEEDED) {
+                    previewView.getEngine().executeScript(
+                        "window.scrollTo(0, " + scrollY + ");"
+                    );
+                }
+            }
+        );
     }
 
     /**
