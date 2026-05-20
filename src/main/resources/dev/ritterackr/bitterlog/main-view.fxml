@@ -84,7 +84,7 @@
                     <Label text="タグ:"/>
                     <TextField fx:id="tagField" promptText="タグをカンマ区切りで入力 (ex: aaa, tips)" HBox.hgrow="ALWAYS"/>
                 </HBox>
-                <CodeArea fx:id="editorArea" VBox.vgrow="ALWAYS"/>
+                <CodeArea fx:id="editorArea" VBox.vgrow="ALWAYS" style="-fx-font-family: 'Yu Gothic UI'; -fx-font-size: 13px;"/>
             </VBox>
 
             <!-- 右側: プレビュー -->
